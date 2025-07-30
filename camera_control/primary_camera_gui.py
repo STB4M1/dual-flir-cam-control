@@ -1,0 +1,387 @@
+import os
+import PySpin
+import numpy as np
+import time
+
+
+class PrimaryCamera:
+    def __init__(self, system, serial_number: int = None):
+        self.system = system
+        self.cam_list = system.GetCameras()
+        self.camera = self.cam_list.GetBySerial(str(serial_number))
+        self.camera.Init()
+        self.folder = None
+        self.frame_counter = 0
+        self._primed = False
+        self.trigger_event = False
+        self.image_format = None
+        self.framerate = None
+        self.reverse_x = False
+        self.reverse_y = False
+
+    def prime(
+        self,
+        folder: str,
+        fps: float = None,
+        exposure_time: float = None,
+        image_format: str = 'jpg',
+        gain_auto_mode: str = 'Off',
+        exposure_auto_mode: str = 'Off',
+        width: int = None,
+        height: int = None,
+        center_roi: bool = True,
+        offset_x: int = None,
+        offset_y: int = None,
+        pixel_format_name: str = 'Mono8',
+        reverse_x: bool = False,
+        reverse_y: bool = False
+    ):
+
+        if self.camera.IsStreaming():
+            self.camera.EndAcquisition()
+
+        if self.camera.IsInitialized():
+            self.camera.DeInit()
+        self.camera.Init()
+
+        if self._primed:
+            self.stop()
+
+        self.folder = folder
+        self.frame_counter = 0
+        self.image_format = image_format
+        self.reverse_x = reverse_x
+        self.reverse_y = reverse_y
+        nodemap = self.camera.GetNodeMap()
+
+        # GainAuto
+        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
+            entry = gain_auto_node.GetEntryByName(gain_auto_mode)
+            gain_auto_node.SetIntValue(entry.GetValue())
+
+        # ExposureAuto
+        exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('ExposureAuto'))
+        if PySpin.IsAvailable(exposure_auto_node) and PySpin.IsWritable(exposure_auto_node):
+            entry = exposure_auto_node.GetEntryByName(exposure_auto_mode)
+            exposure_auto_node.SetIntValue(entry.GetValue())
+
+        # ExposureTime
+        if exposure_time is not None and exposure_auto_mode in ["Off", "Once"]:
+            exp_node = PySpin.CFloatPtr(nodemap.GetNode("ExposureTime"))
+            if PySpin.IsAvailable(exp_node) and PySpin.IsWritable(exp_node):
+                exp_node.SetValue(exposure_time)
+
+        # FPS
+        if fps is not None:
+            fps_enable_node = PySpin.CBooleanPtr(nodemap.GetNode("AcquisitionFrameRateEnable"))
+            fps_node = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
+            if PySpin.IsAvailable(fps_enable_node) and PySpin.IsWritable(fps_enable_node):
+                fps_enable_node.SetValue(True)
+            if PySpin.IsAvailable(fps_node) and PySpin.IsWritable(fps_node):
+                fps_node.SetValue(fps)
+
+        # ROI
+        w_node = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
+        h_node = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
+        x_node = PySpin.CIntegerPtr(nodemap.GetNode("OffsetX"))
+        y_node = PySpin.CIntegerPtr(nodemap.GetNode("OffsetY"))
+
+        original_offset_x = x_node.GetValue()  # 元の OffsetX を保存
+        original_offset_y = y_node.GetValue()  # 元の OffsetY を保存
+
+        if PySpin.IsWritable(x_node): x_node.SetValue(0)  # 最大サイズ取得のため OffsetX = 0
+        if PySpin.IsWritable(y_node): y_node.SetValue(0)  # 最大サイズ取得のため OffsetY = 0
+
+        max_w = w_node.GetMax()  # 真の最大幅を取得
+        max_h = h_node.GetMax()  # 真の最大高さを取得
+
+        if PySpin.IsWritable(x_node): x_node.SetValue(original_offset_x)  # 元の OffsetX に戻す
+        if PySpin.IsWritable(y_node): y_node.SetValue(original_offset_y)  # 元の OffsetY に戻す
+
+        roi_w = width if width not in (None, 0) else max_w  # 実際に設定する幅
+        roi_h = height if height not in (None, 0) else max_h  # 実際に設定する高さ
+
+        print(f"[DEBUG] {self.__class__.__name__} 最大サイズ: Width={max_w}, Height={max_h}")
+        print(f"[DEBUG] {self.__class__.__name__} 設定サイズ: Width={roi_w}, Height={roi_h}")
+
+        if center_roi:
+            offset_x = (max_w - roi_w) // 2  # 最大幅ベースで中央配置
+            offset_y = (max_h - roi_h) // 2  # 最大高さベースで中央配置
+        else:
+            offset_x = 0
+            offset_y = 0
+
+        inc_x = x_node.GetInc()
+        inc_y = y_node.GetInc()
+        offset_x = offset_x - (offset_x % inc_x)
+        offset_y = offset_y - (offset_y % inc_y)
+
+        inc_w = w_node.GetInc()
+        inc_h = h_node.GetInc()
+        roi_w = roi_w - (roi_w % inc_w)
+        roi_h = roi_h - (roi_h % inc_h)
+
+        if PySpin.IsWritable(w_node): w_node.SetValue(roi_w)
+        if PySpin.IsWritable(h_node): h_node.SetValue(roi_h)
+
+        # 必ず幅・高さをセットしてから Offset を設定！
+        max_offset_x = x_node.GetMax()
+        max_offset_y = y_node.GetMax()
+        offset_x = min(offset_x, max_offset_x)
+        offset_y = min(offset_y, max_offset_y)
+
+        if PySpin.IsWritable(x_node): x_node.SetValue(offset_x)
+        if PySpin.IsWritable(y_node): y_node.SetValue(offset_y)
+
+        # PixelFormat
+        fmt_node = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
+        if PySpin.IsAvailable(fmt_node) and PySpin.IsWritable(fmt_node):
+            entry = fmt_node.GetEntryByName(pixel_format_name)
+            if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
+                fmt_node.SetIntValue(entry.GetValue())
+
+        # Stream mode
+        self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_OldestFirst)
+        self.framerate = int(np.ceil(self.camera.AcquisitionFrameRate.GetValue()))
+        self._primed = True
+
+        self.roi_info = {
+            'x_min': offset_x,
+            'y_min': offset_y,
+            'x_max': offset_x + roi_w,
+            'y_max': offset_y + roi_h
+        }
+        print(f"[DEBUG] {self.__class__.__name__} ROI: "
+            f"x_min={offset_x}, y_min={offset_y}, x_max={offset_x + roi_w}, y_max={offset_y + roi_h}")
+
+    def trigger(self):
+        if not self._primed:
+            raise RuntimeError("Camera is not primed")
+
+        if not self.camera.IsStreaming():
+            try:
+                self.camera.BeginAcquisition()
+                time.sleep(0.1)  # 🔧 少し待って安定化（重要！）
+                self.trigger_event = True
+            except Exception as e:
+                print(f"[Trigger] BeginAcquisition failed: {e}")
+                self.trigger_event = False
+        else:
+            self.trigger_event = True
+
+    def capture_frame(self, return_numpy=False, custom_filename: str = None):
+        if not self.trigger_event:
+            raise RuntimeError("Camera is not acquiring")
+        try:
+            image_result = self.camera.GetNextImage()
+            if image_result.IsIncomplete():
+                print("[PrimaryCamera] Incomplete image")
+                return None
+            img_np = image_result.GetNDArray()
+
+            if return_numpy:
+                image_result.Release()
+                return img_np
+            else:
+                if custom_filename:
+                    filename = os.path.join(self.folder, custom_filename)
+                else:
+                    filename = os.path.join(self.folder, f"frame_{self.frame_counter}.{self.image_format}")
+                import cv2
+                cv2.imwrite(filename, img_np)
+                self.frame_counter += 1
+                image_result.Release()
+                return filename
+        except PySpin.SpinnakerException as e:
+            print(f"[PrimaryCamera] Capture error: {e}")
+            return None
+
+    def record(self, duration_sec: float):
+        if not self._primed:
+            raise RuntimeError("Camera must be primed before recording")
+
+        total_frames = int(duration_sec * self.framerate)
+        interval = 1.0 / self.framerate
+
+        print(f"[PrimaryCamera] Start recording: {total_frames} frames at {self.framerate} FPS")
+
+        self.camera.BeginAcquisition()
+        self.trigger_event = True
+
+        try:
+            for _ in range(total_frames):
+                start_time = time.time()
+                self.capture_frame()
+                elapsed = time.time() - start_time
+                sleep_time = max(0, interval - elapsed)
+                time.sleep(sleep_time)
+        except Exception as e:
+            print(f"[PrimaryCamera] Recording error: {e}")
+        finally:
+            self.stop()
+            print(f"[PrimaryCamera] Recording finished. {self.frame_counter} frames saved.")
+
+    def stop(self):
+        if self.camera.IsStreaming():
+            self.camera.EndAcquisition()
+        self.trigger_event = False
+        self._primed = False
+
+    def capture_frame_for_live(self):
+        """
+        LiveView専用：PixelFormat_Mono8 前提で直接NumPy取得（最も安定）
+        """
+        try:
+            image_result = self.camera.GetNextImage(100)
+            # print(f"[LiveCapture] image_result type: {type(image_result)}")
+
+            if image_result.IsIncomplete():
+                print("[LiveCapture] Incomplete image")
+                image_result.Release()
+                return None
+
+            arr = image_result.GetNDArray()
+            image_result.Release()
+            arr = np.ascontiguousarray(arr)
+
+            return arr
+
+        except Exception as e:
+            print(f"[LiveCapture] Error: {e}")
+            return None
+
+    def prime_for_live(
+        self,
+        width: int = None,
+        height: int = None,
+        center_roi: bool = True,
+        offset_x: int = None,
+        offset_y: int = None,
+        pixel_format_name: str = 'Mono8',
+        reverse_x: bool = False,
+        reverse_y: bool = False,
+        gain_auto_mode: str = 'Off',
+        exposure_auto_mode: str = 'Off',
+        exposure_time: float = None,
+        fps: float = None
+    ):
+        if self.camera.IsStreaming():
+            self.camera.EndAcquisition()
+        if self.camera.IsInitialized():
+            self.camera.DeInit()
+        self.camera.Init()
+
+        self.reverse_x = reverse_x
+        self.reverse_y = reverse_y
+        nodemap = self.camera.GetNodeMap()
+
+        # GainAuto
+        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
+            entry = gain_auto_node.GetEntryByName(gain_auto_mode)
+            gain_auto_node.SetIntValue(entry.GetValue())
+
+        # ExposureAuto
+        exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('ExposureAuto'))
+        if PySpin.IsAvailable(exposure_auto_node) and PySpin.IsWritable(exposure_auto_node):
+            entry = exposure_auto_node.GetEntryByName(exposure_auto_mode)
+            exposure_auto_node.SetIntValue(entry.GetValue())
+
+        # ExposureTime
+        if exposure_time is not None and exposure_auto_mode in ["Off", "Once"]:
+            exp_node = PySpin.CFloatPtr(nodemap.GetNode("ExposureTime"))
+            if PySpin.IsAvailable(exp_node) and PySpin.IsWritable(exp_node):
+                exp_node.SetValue(exposure_time)
+
+        # FPS
+        if fps is not None:
+            fps_enable_node = PySpin.CBooleanPtr(nodemap.GetNode("AcquisitionFrameRateEnable"))
+            fps_node = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
+            if PySpin.IsAvailable(fps_enable_node) and PySpin.IsWritable(fps_enable_node):
+                fps_enable_node.SetValue(True)
+            if PySpin.IsAvailable(fps_node) and PySpin.IsWritable(fps_node):
+                fps_node.SetValue(fps)
+
+        # ROI
+        w_node = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
+        h_node = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
+        x_node = PySpin.CIntegerPtr(nodemap.GetNode("OffsetX"))
+        y_node = PySpin.CIntegerPtr(nodemap.GetNode("OffsetY"))
+
+        if PySpin.IsWritable(x_node): x_node.SetValue(0)
+        if PySpin.IsWritable(y_node): y_node.SetValue(0)
+        max_w = w_node.GetMax()
+        max_h = h_node.GetMax()
+
+        roi_w = width if width not in (None, 0) else max_w
+        roi_h = height if height not in (None, 0) else max_h
+
+        if center_roi:
+            offset_x = (max_w - roi_w) // 2
+            offset_y = (max_h - roi_h) // 2
+        else:
+            offset_x = 0
+            offset_y = 0
+
+        offset_x -= offset_x % x_node.GetInc()
+        offset_y -= offset_y % y_node.GetInc()
+        roi_w -= roi_w % w_node.GetInc()
+        roi_h -= roi_h % h_node.GetInc()
+
+        if PySpin.IsWritable(w_node): w_node.SetValue(roi_w)
+        if PySpin.IsWritable(h_node): h_node.SetValue(roi_h)
+
+        max_offset_x = x_node.GetMax()
+        max_offset_y = y_node.GetMax()
+        offset_x = min(offset_x, max_offset_x)
+        offset_y = min(offset_y, max_offset_y)
+
+        if PySpin.IsWritable(x_node): x_node.SetValue(offset_x)
+        if PySpin.IsWritable(y_node): y_node.SetValue(offset_y)
+
+        # PixelFormat
+        fmt_node = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
+        if PySpin.IsAvailable(fmt_node) and PySpin.IsWritable(fmt_node):
+            entry = fmt_node.GetEntryByName(pixel_format_name)
+            if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
+                fmt_node.SetIntValue(entry.GetValue())
+
+        # ReverseX/Y
+        reverse_x_node = PySpin.CBooleanPtr(nodemap.GetNode("ReverseX"))
+        if PySpin.IsAvailable(reverse_x_node) and PySpin.IsWritable(reverse_x_node):
+            reverse_x_node.SetValue(self.reverse_x)
+
+        reverse_y_node = PySpin.CBooleanPtr(nodemap.GetNode("ReverseY"))
+        if PySpin.IsAvailable(reverse_y_node) and PySpin.IsWritable(reverse_y_node):
+            reverse_y_node.SetValue(self.reverse_y)
+
+        # Stream mode for LiveView
+        self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_NewestOnly)
+
+        self._primed = True
+
+        self.roi_info = {
+            'x_min': offset_x,
+            'y_min': offset_y,
+            'x_max': offset_x + roi_w,
+            'y_max': offset_y + roi_h
+        }
+
+    def release(self):
+        try:
+            if self.camera is not None:
+                if self.camera.IsValid() and self.camera.IsInitialized():
+                    self.camera.DeInit()
+                del self.camera
+        except Exception as e:
+            print(f"[PrimaryCamera] release error: {e}")
+        finally:
+            self.cam_list.Clear()
+
+    def __del__(self):
+        pass  # Avoid calling release() automatically
+
+    @property
+    def primed(self):
+        return self._primed

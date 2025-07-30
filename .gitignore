@@ -1,0 +1,55 @@
+# Python バイトコードやキャッシュ
+__pycache__/
+*.py[cod]
+*.so
+
+# 環境・仮想環境
+.env
+.venv/
+venv/
+env/
+
+# IDE設定ファイル
+.vscode/
+.idea/
+*.swp
+
+# OSゴミ
+.DS_Store
+Thumbs.db
+
+# Jupyter等（使ってるなら）
+.ipynb_checkpoints/
+
+# ビルド生成物
+build/
+dist/
+*.egg-info/
+
+# カメラ画像など大きな一時ファイル（必要に応じて）
+*.avi
+*.mp4
+*.mov
+*.png
+*.jpg
+*.tif
+*.log
+
+# CMake/Make等（C++やQt使うなら）
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+Makefile
+*.o
+*.obj
+*.exe
+*.out
+
+# Qt Creator や CLion などのビルド系
+*.pro.user
+*.autosave
+*.user
+
+# PyCharm, JetBrains系
+*.iml
+.idea/
