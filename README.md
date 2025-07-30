@@ -45,7 +45,7 @@ Teledyne FLIR社の公式Spinnaker SDK（Pythonバインディング：`PySpin`�
 
 ## 🧵 録画処理とスレッド構成
 
-- `CameraWorker` クラスを使用して、録画処理は**QThread上で非同期実行**
+- `CameraWorker` クラスを使用して、録画処理は**QThread上でGUIとは別実行**
 - GUIの応答性を保ちつつ、指定秒数で安定したキャプチャを実現
 - エラー時にはシグナルで通知され、ログ表示に反映
 
