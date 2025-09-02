@@ -96,6 +96,45 @@ DualFLIRCamControlApp/
 
 ---
 
+### 🖥️ SpinView のインストール
+- Teledyne FLIR の公式サイトから **Spinnaker SDK for Windows Full** をインストールしてください  
+  - **Description = Windows Full** のものを選択  
+  - **SpinView** が含まれており、カメラの認識確認や動作テストに利用できます  
+  - Python 側でカメラが見えない場合、まず SpinView で確認するのが推奨です
+
+---
+
+### 📦 Python バインディングのインストール
+- 上記に加えて、**Description = Python *.* ** のパッケージをダウンロードしてください  
+  - ここに Python バージョンごとの `.whl` ファイルが含まれています  
+  - 例：Python 3.10 → `spinnaker_python-4.2.0.88-cp310-cp310-win_amd64.whl`
+
+---
+
+### 🌐 ダウンロードページ
+- 公式サイト（Teledyne FLIR）  
+  [Spinnaker SDK Downloads](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/?pn=Spinnaker+SDK&vn=Spinnaker+SDK)
+
+---
+
+### 🔑 Python 環境の準備
+- Spinnaker SDK のバージョンごとに対応する **Python バージョン**が決まっています  
+  - 例：Spinnaker 4.2.0.88 → Python 3.10  
+
+1. 対応バージョンの Python 仮想環境を作成  
+   ```bash
+   # micromamba を利用する場合の例
+   micromamba create -n flir -c conda-forge python=3.10
+   micromamba activate flir
+   ```
+
+2. ダウンロードした `.whl` を、その環境（例では flir という名前）内でインストール  
+   ```bash
+   pip install C:\Path\To\spinnaker_python-4.2.0.88-cp310-cp310-win_amd64.whl
+   ```
+   
+---
+
 ## 🚀 起動方法（例）
 
 ```bash
