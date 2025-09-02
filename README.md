@@ -90,6 +90,7 @@ DualFLIRCamControlApp/
 - `PySpin` は **Teledyne FLIR公式のPythonバインディング**
 - **インストールは pip ではなく、Spinnaker SDK のインストーラ内にある `.whl` ファイルを使用**  
   → 例：`pip install spinnaker_python‑3.0.0.118-cp39-cp39-win_amd64.whl`
+- https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/?pn=Spinnaker+SDK&vn=Spinnaker+SDK
 - `import PySpin` と書きます（`Spinnaker_Python` などではありません）
 - PyPIにある `pyspin` などは **非公式・別物** なので注意！
 
