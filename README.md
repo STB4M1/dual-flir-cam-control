@@ -76,7 +76,7 @@ DualFLIRCamControlApp/
 ## 💻 動作環境
 
 - **OS**：Windows 10 / 11（FLIR SDK対応環境）
-- **Python**：3.8〜3.11
+- **Python**：3.8〜3.10
 - **依存パッケージ**（一例）：
   - `PySide6`
   - `numpy`
