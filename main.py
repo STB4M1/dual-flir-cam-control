@@ -559,13 +559,28 @@ class MainWindow(QMainWindow):
             self.toggle_liveview_cam2()
             self.ui.textEditLogCam2.append("[Cam2] 録画後にLiveViewを再開")
 
+    # def qpixmap_to_numpy(self, pixmap):
+    #     image = pixmap.toImage().convertToFormat(QImage.Format_Grayscale8)
+    #     width = image.width()
+    #     height = image.height()
+    #     ptr = image.bits()
+    #     buffer = ptr[:width * height].tobytes()
+    #     return np.frombuffer(buffer, dtype=np.uint8).reshape((height, width))
+
     def qpixmap_to_numpy(self, pixmap):
-        image = pixmap.toImage().convertToFormat(QImage.Format_Grayscale8)
+        image = pixmap.toImage()
         width = image.width()
         height = image.height()
+
+        # 🔹 カラー形式に変換（BGR8）
+        image = image.convertToFormat(QImage.Format_BGR888)
+
         ptr = image.bits()
-        buffer = ptr[:width * height].tobytes()
-        return np.frombuffer(buffer, dtype=np.uint8).reshape((height, width))
+        data = ptr.tobytes()  # ← PySide6ではこれでOK！
+
+        arr = np.frombuffer(data, np.uint8).reshape((height, width, 3))
+        arr = arr[:, :, ::-1].copy()  # BGR→RGB
+        return arr
 
     def on_histogram_button_cam1(self):
         pixmap = self.ui.openGLWidgetImageCam1.pixmap
