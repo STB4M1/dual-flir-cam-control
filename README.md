@@ -1,53 +1,94 @@
-
-# 📷 Dual FLIRカメラ制御アプリ
-
-2台のFLIRカメラをGUI上から個別または同期で制御・撮影・録画できるアプリケーションです。  
-Teledyne FLIR社の公式Spinnaker SDK（Pythonバインディング：`PySpin`）を使用しており、外部トリガによるハード同期撮影にも対応しています。
+# 📷 Dual FLIR カメラ制御アプリ
+*A Dual FLIR Camera Control Application for synchronized optical imaging and recording.*
 
 ---
 
-## 🌟 特徴
+## 🧭 概要（Overview）
 
-- 🔌 2台のFLIRカメラを**個別接続／切断**
-- 🎯 同期モードにより**ハードウェアトリガによる同時撮影**
-- 📸 静止画撮影・🎞録画（時間指定）に対応
-- 🖼 ライブビュー（OpenGLWidgetベース）
-- ⚙ FPS / ROI / ゲイン / 露光時間 / ピクセルフォーマット など詳細設定可
-- 📂 保存先フォルダをGUI上から指定
-- 📊 ヒストグラム表示
-- 💡 GUIスレッドとは別スレッドでの録画処理で安定動作
-- 📄 実行ログのリアルタイム表示
+2台の FLIR カメラを **GUI 上から個別または同期** で制御・撮影・録画できるアプリケーションです。  
+Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin）を使用しており、  
+**外部トリガによるハードウェア同期撮影** にも対応しています。
 
 ---
 
-## 🖥 GUI構成
+## 🌟 主な特徴（Main Features）
+
+| 分類 | 機能 | 説明 |
+|------|------|------|
+| 🔢 **カメラ識別** | シリアル番号指定 | 各カメラを個別のシリアル番号で認識・接続 |
+| 🎥 **カメラ接続制御** | 接続／切断 | GUI上からカメラ1・2を個別に接続／切断可能 |
+| 🖼 **画像サイズ設定** | Width／Height／CenterROI | ROIをセンター寄せまたは任意サイズで設定 |
+| 📍 **位置調整** | X／Y Offset | ROI位置を個別に微調整可能 |
+| ⚙ **撮影パラメータ** | 露光時間・ゲイン・FPS | GUI上でリアルタイム変更／同期調整対応 |
+| ⏱ **記録設定** | 録画時間指定 | 秒数を指定して安定した録画を実行 |
+| 🗂 **保存形式** | 画像フォーマット／拡張子 | RAW, TIFF などフォーマット・拡張子を選択可 |
+| 📁 **保存先設定** | 出力フォルダ変更 | カメラごとに保存ディレクトリ指定可能 |
+| ⚪ **ホワイトバランス** | Auto（Off／Once／Continuous） | BalanceWhiteAuto ノード制御による自動調整 |
+| 🔴 **Balance Ratio** | Red／Blue | BalanceRatioSelector ノードで個別設定可能 |
+| 📸 **撮影モード** | シングル／連続フレーム撮影 | 各カメラ単体またはハード同期で撮影 |
+| 🔄 **ハード同期撮影** | Line3 トリガ対応 | Primary → Secondary 間で外部信号による同期撮影 |
+| 🖥 **ライブビュー** | OpenGL描画 | PySide6 + OpenGL によるリアルタイム表示 |
+| 🧮 **ヒストグラム** | Gray + RGB | 撮影画像の輝度分布をリアルタイムで可視化 |
+| 📡 **ログ出力** | リアルタイム表示 | カメラ操作・撮影結果・例外を即時ログ表示 |
+| 🧵 **スレッド制御** | QThread録画処理 | GUI応答性を維持しながら録画を非同期実行 |
+| 🧠 **自動補正** | FPS／ROI補正 | カメラ仕様範囲内に自動クランプして安全化 |
+| 🧰 **エラーハンドリング** | PySpin例外検知 | 未対応ノード・設定範囲外を安全に検出 |
+| 💾 **設定保存（将来対応）** | JSON保存予定 | GUI設定の永続化を予定 |
+
+---
+
+## 🖥 GUI 構成（GUI Layout）
 
 | 機能 | 説明 |
 |------|------|
-| カメラ接続 | シリアル番号を指定してカメラ1・2を個別に接続／切断 |
-| パラメータ設定 | FPS・露光・ゲイン・ピクセルフォーマット・ROIなどを個別に設定可能 |
-| 静止画撮影 | 個別または同期（同時）で1枚撮影 |
-| 録画 | 秒数指定で録画（個別または同期） |
-| ライブビュー | 各カメラのリアルタイム映像を表示（OpenGL使用） |
-| 保存先選択 | 保存ディレクトリを個別に選択可能 |
-| ヒストグラム | 撮影画像の濃度分布を別ウィンドウで表示 |
-| ログ表示 | 実行処理の詳細をリアルタイムで表示 |
+| カメラ接続 | シリアル番号指定でカメラ1・2を接続／切断 |
+| 撮影設定 | 露光・ゲイン・FPS・フォーマットを設定可能 |
+| ROI設定 | Width／Height／OffsetX／OffsetY／CenterROI |
+| ホワイトバランス | Autoモード（Off／Once／Continuous）選択 |
+| バランス比 | Red／BlueをGUI上でスライダーまたは数値入力 |
+| 録画 | 秒数指定録画（単体／同期対応） |
+| 静止画撮影 | シングル or 同期シングルフレーム撮影 |
+| ライブビュー | OpenGLによるリアルタイム表示 |
+| ヒストグラム | Gray+RGBの明暗分布をライブ描画 |
+| 保存設定 | 保存フォルダ・拡張子・フォーマット選択 |
+| ログ表示 | 操作・撮影のログをリアルタイムで出力 |
 
 ---
 
-## 🔧 カメラ制御構成
+## 🔧 カメラ制御構成（Camera Architecture）
 
-- **PrimaryCamera（親）**：ソフトウェア／外部トリガで撮影可能。必要に応じて Line 出力でトリガ送信
-- **SecondaryCamera（子）**：Line3 からの外部トリガ受信で同期撮影を実現
-- FPSの整合性や ROI の調整は自動補正され、カメラの仕様に沿った安全な設定が可能
+- **PrimaryCamera（親）**：ソフトウェアまたは外部トリガで撮影可能。必要に応じて Line 出力でトリガ送信。  
+- **SecondaryCamera（子）**：Line3 からの外部トリガを受けて同期撮影を実行。  
+- FPS・ROI・露光などの整合性は自動的に補正され、カメラ仕様に準拠した安全動作を保証。
 
 ---
 
-## 🧵 録画処理とスレッド構成
+## 🧵 録画処理とスレッド構成（Thread Architecture）
 
-- `CameraWorker` クラスを使用して、録画処理は**QThread上でGUIとは別実行**
-- GUIの応答性を保ちつつ、指定秒数で安定したキャプチャを実現
-- エラー時にはシグナルで通知され、ログ表示に反映
+- CameraWorker クラスにより録画処理を **QThread** 上で実行  
+- GUIと非同期動作し、滑らかな録画体験を実現  
+- エラー発生時はシグナル経由でログに即時反映  
+
+---
+
+## 🧩 UIファイル（.ui → .py 変換方法）
+
+Qt Designer で設計した `.ui` ファイル（例：mainwindow.ui）は、  
+**PySide6 の UI コンパイラ (pyside6-uic)** を使用してPythonコードへ変換します。
+
+```bash
+pyside6-uic mainwindow.ui -o ./ui/ui_mainwindow.py
+```
+
+💡 PowerShell 例（Windows）
+```powershell
+micromamba activate flir
+pyside6-uic mainwindow.ui -o .\ui\ui_mainwindow.py
+```
+
+⚠️ **注意**  
+- 日本語パスやスペースを含むフォルダではエラーが出る場合があります  
+- .uiを更新した際は再度上記コマンドを実行してください  
 
 ---
 
@@ -57,93 +98,63 @@ Teledyne FLIR社の公式Spinnaker SDK（Pythonバインディング：`PySpin`�
 DualFLIRCamControlApp/
 ├── main.py                       # アプリ起動とGUI接続
 ├── camera_control/
-│   ├── camera_controller.py     # カメラ制御の統括管理クラス
-│   ├── primary_camera_gui.py    # 親カメラ制御クラス
-│   ├── secondary_camera_gui.py  # 子カメラ制御クラス
-│   ├── camera_worker.py         # 録画処理ワーカークラス
-│   └── camera_live_worker.py    # ライブビュー処理ワーカークラス
+│   ├── camera_controller.py     # カメラ制御統括
+│   ├── primary_camera_gui.py    # 親カメラ制御
+│   ├── secondary_camera_gui.py  # 子カメラ制御
+│   ├── camera_worker.py         # 録画処理ワーカー
+│   └── camera_live_worker.py    # ライブビュー処理ワーカー
 ├── ui/
-│   └── ui_mainwindow.py         # GUIの構成要素（自動生成）
+│   └── ui_mainwindow.py         # GUI構成（自動生成）
 ├── util/
 │   ├── log_helper.py            # ログ出力整形
-│   └── camera_discovery.py      # カメラ一覧取得
-├── outputs/                     # 保存先（画像・録画結果）
-└── .gitignore                   # 不要ファイル除外設定
+│   └── camera_discovery.py      # カメラ検出
+├── outputs/                     # 保存先（画像・動画）
+└── .gitignore                   # 除外設定
 ```
 
 ---
 
-## 💻 動作環境
+## 💻 動作環境（Environment）
 
-- **OS**：Windows 10 / 11（FLIR SDK対応環境）
-- **Python**：3.8〜3.10
-- **依存パッケージ**（一例）：
-  - `PySide6`
-  - `numpy`
-  - `PyOpenGL`
-  - `PySpin`（＝公式Spinnaker SDKのPythonバインディング）
-
----
-
-## ⚠️ 注意：PySpinの取り扱いについて
-
-- `PySpin` は **Teledyne FLIR公式のPythonバインディング**
-- **インストールは pip ではなく、Spinnaker SDK のインストーラ内にある `.whl` ファイルを使用**  
-  → 例：`pip install spinnaker_python‑3.0.0.118-cp39-cp39-win_amd64.whl`
-- https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/?pn=Spinnaker+SDK&vn=Spinnaker+SDK
-- `import PySpin` と書きます（`Spinnaker_Python` などではありません）
-- PyPIにある `pyspin` などは **非公式・別物** なので注意！
+- **OS**：Windows 10 / 11（FLIR SDK対応）  
+- **Python**：3.8〜3.10  
+- **主要依存パッケージ：**
+  - PySide6  
+  - numpy  
+  - PyOpenGL  
+  - PySpin（＝Spinnaker SDK Python バインディング）
 
 ---
 
-### 🖥️ SpinView のインストール
-- Teledyne FLIR の公式サイトから **Spinnaker SDK for Windows Full** をインストールしてください  
-  - **Description = Windows Full** のものを選択  
-  - **SpinView** が含まれており、カメラの認識確認や動作テストに利用できます  
-  - Python 側でカメラが見えない場合、まず SpinView で確認するのが推奨です
+## ⚙️ 開発環境構築（Setup Guide）
+
+詳細な環境構築手順は以下を参照してください👇  
+📘 [環境構築手順書 (README_ENV_SETUP.md)](./README_ENV_SETUP.md)
 
 ---
 
-### 📦 Python バインディングのインストール
-- 上記に加えて、**Description = Python *.* ** のパッケージをダウンロードしてください  
-  - ここに Python バージョンごとの `.whl` ファイルが含まれています  
-  - 例：Python 3.10 → `spinnaker_python-4.2.0.88-cp310-cp310-win_amd64.whl`
+## ⚠️ PySpin の注意点（About PySpin）
+
+- **pip ではなく公式 .whl ファイルからインストール**
+```bash
+pip install spinnaker_python-4.2.0.88-cp310-cp310-win_amd64.whl
+```
+
+📘 公式ダウンロード：  
+👉 [Spinnaker SDK Downloads](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/?pn=Spinnaker+SDK&vn=Spinnaker+SDK)
 
 ---
 
-### 🌐 ダウンロードページ
-- 公式サイト（Teledyne FLIR）  
-  [Spinnaker SDK Downloads](https://www.teledynevisionsolutions.com/support/support-center/software-firmware-downloads/iis/spinnaker-sdk-download/spinnaker-sdk--download-files/?pn=Spinnaker+SDK&vn=Spinnaker+SDK)
-
----
-
-### 🔑 Python 環境の準備
-- Spinnaker SDK のバージョンごとに対応する **Python バージョン**が決まっています  
-  - 例：Spinnaker 4.2.0.88 → Python 3.10  
-
-1. 対応バージョンの Python 仮想環境を作成  
-   ```bash
-   # micromamba を利用する場合の例
-   micromamba create -n flir -c conda-forge python=3.10
-   micromamba activate flir
-   ```
-
-2. ダウンロードした `.whl` を、その環境（例では flir という名前）内でインストール  
-   ```bash
-   pip install C:\Path\To\spinnaker_python-4.2.0.88-cp310-cp310-win_amd64.whl
-   ```
-   
----
-
-## 🚀 起動方法（例）
+## 🚀 起動方法（Run）
 
 ```bash
-# アプリ起動
 python main.py
 ```
 
-## ⚠️ 免責事項
+---
+
+## 🧾 免責事項（Disclaimer）
 
 本アプリは個人の研究・学習目的で開発されたものであり、  
-本ソフトウェアの使用に伴ういかなる問題や損害についても、作者は一切の責任を負いません。  
-利用される場合は、ご自身の責任にてお願いいたします。
+使用に伴ういかなる損害についても、作者は責任を負いません。  
+ご利用は自己責任でお願いいたします。
