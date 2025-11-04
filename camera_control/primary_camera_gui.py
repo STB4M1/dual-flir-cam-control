@@ -18,6 +18,9 @@ class PrimaryCamera:
         self.framerate = None
         self.reverse_x = False
         self.reverse_y = False
+        self.white_balance_auto = "Off"
+        self.balance_ratio_selector = "Red"
+        self.balance_ratio_value = 1.0
 
     def prime(
         self,
@@ -34,7 +37,10 @@ class PrimaryCamera:
         offset_y: int = None,
         pixel_format_name: str = 'Mono8',
         reverse_x: bool = False,
-        reverse_y: bool = False
+        reverse_y: bool = False,
+        white_balance_auto: str = "Off",             
+        balance_ratio_selector: str = "Red",         
+        balance_ratio_value: float = 1.0  
     ):
 
         if self.camera.IsStreaming():
@@ -52,6 +58,10 @@ class PrimaryCamera:
         self.image_format = image_format
         self.reverse_x = reverse_x
         self.reverse_y = reverse_y
+        self.white_balance_auto = white_balance_auto
+        self.balance_ratio_selector = balance_ratio_selector
+        self.balance_ratio_value = balance_ratio_value
+
         nodemap = self.camera.GetNodeMap()
 
         # GainAuto
@@ -140,6 +150,34 @@ class PrimaryCamera:
             entry = fmt_node.GetEntryByName(pixel_format_name)
             if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
                 fmt_node.SetIntValue(entry.GetValue())
+
+        # --- 🔹 White Balance Settings ---
+        try:
+            # White Balance Auto
+            wb_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("BalanceWhiteAuto"))
+            if PySpin.IsAvailable(wb_auto_node) and PySpin.IsWritable(wb_auto_node):
+                # "Off", "Once", "Continuous" のいずれか
+                wb_entry = wb_auto_node.GetEntryByName(getattr(self, "white_balance_auto", "Off"))
+                if PySpin.IsAvailable(wb_entry):
+                    wb_auto_node.SetIntValue(wb_entry.GetValue())
+
+            # Balance Ratio Selector (Red / Blue)
+            selector_node = PySpin.CEnumerationPtr(nodemap.GetNode("BalanceRatioSelector"))
+            if PySpin.IsAvailable(selector_node) and PySpin.IsWritable(selector_node):
+                entry = selector_node.GetEntryByName(getattr(self, "balance_ratio_selector", "Red"))
+                if PySpin.IsAvailable(entry):
+                    selector_node.SetIntValue(entry.GetValue())
+
+                ratio_node = PySpin.CFloatPtr(nodemap.GetNode("BalanceRatio"))
+                if PySpin.IsAvailable(ratio_node) and PySpin.IsWritable(ratio_node):
+                    ratio_node.SetValue(getattr(self, "balance_ratio_value", 1.0))
+
+            print(f"[{self.__class__.__name__}] WhiteBalanceAuto={getattr(self, 'white_balance_auto', 'Off')}, "
+                  f"Selector={getattr(self, 'balance_ratio_selector', 'Red')}, "
+                  f"Ratio={getattr(self, 'balance_ratio_value', 1.0)}")
+
+        except Exception as e:
+            print(f"[{self.__class__.__name__}] White Balance 設定エラー: {e}")
 
         # Stream mode
         self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_OldestFirst)
@@ -264,8 +302,12 @@ class PrimaryCamera:
         gain_auto_mode: str = 'Off',
         exposure_auto_mode: str = 'Off',
         exposure_time: float = None,
-        fps: float = None
+        fps: float = None,
+        white_balance_auto: str = 'Off',
+        balance_ratio_selector: str = 'Red',
+        balance_ratio_value: float = 1.0
     ):
+        """LiveView用の初期化処理（シンプル版）"""
         if self.camera.IsStreaming():
             self.camera.EndAcquisition()
         if self.camera.IsInitialized():
@@ -276,25 +318,25 @@ class PrimaryCamera:
         self.reverse_y = reverse_y
         nodemap = self.camera.GetNodeMap()
 
-        # GainAuto
+        # --- GainAuto ---
         gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
         if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
             entry = gain_auto_node.GetEntryByName(gain_auto_mode)
             gain_auto_node.SetIntValue(entry.GetValue())
 
-        # ExposureAuto
+        # --- ExposureAuto ---
         exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('ExposureAuto'))
         if PySpin.IsAvailable(exposure_auto_node) and PySpin.IsWritable(exposure_auto_node):
             entry = exposure_auto_node.GetEntryByName(exposure_auto_mode)
             exposure_auto_node.SetIntValue(entry.GetValue())
 
-        # ExposureTime
+        # --- ExposureTime ---
         if exposure_time is not None and exposure_auto_mode in ["Off", "Once"]:
             exp_node = PySpin.CFloatPtr(nodemap.GetNode("ExposureTime"))
             if PySpin.IsAvailable(exp_node) and PySpin.IsWritable(exp_node):
                 exp_node.SetValue(exposure_time)
 
-        # FPS
+        # --- FPS ---
         if fps is not None:
             fps_enable_node = PySpin.CBooleanPtr(nodemap.GetNode("AcquisitionFrameRateEnable"))
             fps_node = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
@@ -303,7 +345,7 @@ class PrimaryCamera:
             if PySpin.IsAvailable(fps_node) and PySpin.IsWritable(fps_node):
                 fps_node.SetValue(fps)
 
-        # ROI
+        # --- ROI設定 ---
         w_node = PySpin.CIntegerPtr(nodemap.GetNode("Width"))
         h_node = PySpin.CIntegerPtr(nodemap.GetNode("Height"))
         x_node = PySpin.CIntegerPtr(nodemap.GetNode("OffsetX"))
@@ -340,14 +382,14 @@ class PrimaryCamera:
         if PySpin.IsWritable(x_node): x_node.SetValue(offset_x)
         if PySpin.IsWritable(y_node): y_node.SetValue(offset_y)
 
-        # PixelFormat
+        # --- PixelFormat ---
         fmt_node = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
         if PySpin.IsAvailable(fmt_node) and PySpin.IsWritable(fmt_node):
             entry = fmt_node.GetEntryByName(pixel_format_name)
             if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
                 fmt_node.SetIntValue(entry.GetValue())
 
-        # ReverseX/Y
+        # --- ReverseX/Y ---
         reverse_x_node = PySpin.CBooleanPtr(nodemap.GetNode("ReverseX"))
         if PySpin.IsAvailable(reverse_x_node) and PySpin.IsWritable(reverse_x_node):
             reverse_x_node.SetValue(self.reverse_x)
@@ -356,11 +398,30 @@ class PrimaryCamera:
         if PySpin.IsAvailable(reverse_y_node) and PySpin.IsWritable(reverse_y_node):
             reverse_y_node.SetValue(self.reverse_y)
 
-        # Stream mode for LiveView
+        # --- White Balance Auto ---
+        wb_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("BalanceWhiteAuto"))
+        if PySpin.IsAvailable(wb_auto_node) and PySpin.IsWritable(wb_auto_node):
+            entry = wb_auto_node.GetEntryByName(white_balance_auto)
+            if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
+                wb_auto_node.SetIntValue(entry.GetValue())
+
+        # --- Balance Ratio Selector ---
+        balance_selector_node = PySpin.CEnumerationPtr(nodemap.GetNode("BalanceRatioSelector"))
+        if PySpin.IsAvailable(balance_selector_node) and PySpin.IsWritable(balance_selector_node):
+            entry = balance_selector_node.GetEntryByName(balance_ratio_selector)
+            if PySpin.IsAvailable(entry) and PySpin.IsReadable(entry):
+                balance_selector_node.SetIntValue(entry.GetValue())
+
+        # --- Balance Ratio Value ---
+        balance_ratio_node = PySpin.CFloatPtr(nodemap.GetNode("BalanceRatio"))
+        if PySpin.IsAvailable(balance_ratio_node) and PySpin.IsWritable(balance_ratio_node):
+            balance_ratio_node.SetValue(balance_ratio_value)
+
+        # --- Stream mode for LiveView ---
         self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_NewestOnly)
 
+        # --- 状態更新 ---
         self._primed = True
-
         self.roi_info = {
             'x_min': offset_x,
             'y_min': offset_y,
