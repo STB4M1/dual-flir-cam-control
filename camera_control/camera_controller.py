@@ -29,7 +29,11 @@ class CameraController:
                        pixel_format: str,
                        extension: str,
                        reverse_x: bool = False,
-                       reverse_y: bool = False):
+                       reverse_y: bool = False,
+                       white_balance_auto: str = "Off",
+                       balance_ratio_selector: str = "Red",
+                       balance_ratio_value: float = 1.0,
+                       ):
         os.makedirs(folder, exist_ok=True)
 
         self.cam1.prime(
@@ -46,7 +50,10 @@ class CameraController:
             pixel_format_name=pixel_format,
             image_format=extension,
             reverse_x=reverse_x,
-            reverse_y=reverse_y
+            reverse_y=reverse_y,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value
         )
 
     def configure_cam2(self,
@@ -64,7 +71,11 @@ class CameraController:
                        extension: str,
                        trigger_mode: str = 'On',
                        reverse_x: bool = False,
-                       reverse_y: bool = False):
+                       reverse_y: bool = False,
+                       white_balance_auto: str = "Off",
+                       balance_ratio_selector: str = "Red",
+                       balance_ratio_value: float = 1.0,
+                       ):
         os.makedirs(folder, exist_ok=True)
 
         self.cam2.prime(
@@ -83,7 +94,10 @@ class CameraController:
             image_format=extension,
             trigger_mode=trigger_mode,
             reverse_x=reverse_x,
-            reverse_y=reverse_y
+            reverse_y=reverse_y,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value
         )
 
     def capture_single_frame(self, custom_filename1=None, custom_filename2=None):

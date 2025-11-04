@@ -3,7 +3,7 @@ import os
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PySide6.QtCore import QThread
-from ui_mainwindow import Ui_MainWindow
+from ui.ui_mainwindow import Ui_MainWindow
 from camera_control.camera_controller import CameraController
 from camera_control.camera_worker import CameraWorker
 from camera_control.camera_live_worker import CameraLiveWorker
@@ -86,7 +86,10 @@ class MainWindow(QMainWindow):
                 pixel_format=self.ui.comboBoxPixelFormatCam1.currentText(),
                 extension=self.ui.comboBoxExtensionCam1.currentText(),
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
-                reverse_y=self.ui.checkBoxReverseYCam1.isChecked()
+                reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
+                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
+                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
+                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
             )
 
             # 撮影実行！
@@ -113,7 +116,10 @@ class MainWindow(QMainWindow):
                 pixel_format=self.ui.comboBoxPixelFormatCam2.currentText(),
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
-                reverse_y=self.ui.checkBoxReverseYCam2.isChecked()
+                reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
+                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
+                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
+                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
             )
 
             self.controller.cam2.trigger()
@@ -148,6 +154,9 @@ class MainWindow(QMainWindow):
         duration_sec = self.ui.doubleSpinBoxRecordingTimeCam1.value()
         reverse_x = self.ui.checkBoxReverseXCam1.isChecked()
         reverse_y = self.ui.checkBoxReverseYCam1.isChecked()
+        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
+        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
+        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
 
         self.controller.configure_cam1(
             folder=folder,
@@ -163,7 +172,10 @@ class MainWindow(QMainWindow):
             pixel_format=pixel_format,
             extension=extension,
             reverse_x=reverse_x,
-            reverse_y=reverse_y
+            reverse_y=reverse_y,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value,
         )
 
         self.thread1 = QThread()
@@ -201,6 +213,9 @@ class MainWindow(QMainWindow):
         duration_sec = self.ui.doubleSpinBoxRecordingTimeCam2.value()
         reverse_x = self.ui.checkBoxReverseXCam2.isChecked()
         reverse_y = self.ui.checkBoxReverseYCam2.isChecked()
+        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
+        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
+        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
 
         self.controller.configure_cam2(
             folder=folder,
@@ -217,7 +232,10 @@ class MainWindow(QMainWindow):
             extension=extension,
             trigger_mode='Off',
             reverse_x=reverse_x,
-            reverse_y=reverse_y
+            reverse_y=reverse_y,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value,
         )
 
         self.thread2 = QThread()
@@ -262,7 +280,10 @@ class MainWindow(QMainWindow):
                 pixel_format=self.ui.comboBoxPixelFormatCam1.currentText(),
                 extension=self.ui.comboBoxExtensionCam1.currentText(),
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
-                reverse_y=self.ui.checkBoxReverseYCam1.isChecked()
+                reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
+                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
+                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
+                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
             )
 
             self.controller.configure_cam2(
@@ -280,7 +301,10 @@ class MainWindow(QMainWindow):
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
                 trigger_mode='On',  # シングルキャプチャではCam2もtriggerをONに！
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
-                reverse_y=self.ui.checkBoxReverseYCam2.isChecked()
+                reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
+                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
+                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
+                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
             )
 
             frame1, frame2 = self.controller.capture_single_frame(
@@ -316,6 +340,9 @@ class MainWindow(QMainWindow):
         dur1 = self.ui.doubleSpinBoxRecordingTimeCam1.value()
         reverse_x1 = self.ui.checkBoxReverseXCam1.isChecked()
         reverse_y1 = self.ui.checkBoxReverseYCam1.isChecked()
+        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam1.currentText()
+        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam1.currentText()
+        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam1.value()
 
         # Cam2 UI
         folder2 = self.ui.lineEditSaveFolderCam2.text()
@@ -333,6 +360,9 @@ class MainWindow(QMainWindow):
         dur2 = self.ui.doubleSpinBoxRecordingTimeCam2.value()
         reverse_x2 = self.ui.checkBoxReverseXCam2.isChecked()
         reverse_y2 = self.ui.checkBoxReverseYCam2.isChecked()
+        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
+        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
+        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
 
         self.controller.configure_cam1(
             folder=folder1,
@@ -348,7 +378,10 @@ class MainWindow(QMainWindow):
             pixel_format=fmt1,
             extension=ext1,
             reverse_x=reverse_x1,
-            reverse_y=reverse_y1
+            reverse_y=reverse_y1,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value,
         )
 
         self.controller.configure_cam2(
@@ -366,7 +399,10 @@ class MainWindow(QMainWindow):
             extension=ext2,
             trigger_mode='On',
             reverse_x=reverse_x2,
-            reverse_y=reverse_y2
+            reverse_y=reverse_y2,
+            white_balance_auto=white_balance_auto,
+            balance_ratio_selector=balance_ratio_selector,
+            balance_ratio_value=balance_ratio_value,
         )
 
         self.thread1 = QThread()
@@ -436,7 +472,10 @@ class MainWindow(QMainWindow):
                     center_roi=self.ui.checkBoxCenterROICam1.isChecked(),
                     pixel_format_name=self.ui.comboBoxPixelFormatCam1.currentText(),
                     reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
-                    reverse_y=self.ui.checkBoxReverseYCam1.isChecked()
+                    reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
+                    white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
+                    balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
+                    balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
                 )
 
                 # LiveViewワーカー起動
@@ -487,7 +526,10 @@ class MainWindow(QMainWindow):
                     center_roi=self.ui.checkBoxCenterROICam2.isChecked(),
                     pixel_format_name=self.ui.comboBoxPixelFormatCam2.currentText(),
                     reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
-                    reverse_y=self.ui.checkBoxReverseYCam2.isChecked()
+                    reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
+                    white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
+                    balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
+                    balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
                 )
 
                 self.live_worker_cam2 = CameraLiveWorker(cam2)
