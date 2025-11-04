@@ -9,6 +9,7 @@ from camera_control.camera_worker import CameraWorker
 from camera_control.camera_live_worker import CameraLiveWorker
 from ui.gl_image_widget import ImageGLWidget
 from ui.histogram_dialog import show_histogram_window
+from ui.histogram_dialog import HistogramDialog
 import PySpin
 import numpy as np
 
@@ -417,11 +418,12 @@ class MainWindow(QMainWindow):
             self.ui.textEditLogCam2.append(f"[Cam2] Max FPS: {max_fps:.2f}")
 
     def toggle_liveview_cam1(self):
+        """Cam1 LiveViewの開始・停止トグル"""
         if not self.liveview_running_cam1:
             try:
                 cam1 = self.controller.cam1  # PrimaryCamera
 
-                # UIの設定を取得して prime_for_live に渡す！
+                # UI設定を渡す
                 cam1.prime_for_live(
                     fps=self.ui.doubleSpinBoxFpsCam1.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
@@ -437,7 +439,7 @@ class MainWindow(QMainWindow):
                     reverse_y=self.ui.checkBoxReverseYCam1.isChecked()
                 )
 
-                # Liveワーカー起動
+                # LiveViewワーカー起動
                 self.live_worker_cam1 = CameraLiveWorker(cam1)
                 self.live_worker_cam1.new_frame.connect(self.update_liveview_cam1)
                 self.live_worker_cam1.start()
@@ -452,19 +454,27 @@ class MainWindow(QMainWindow):
         else:
             # Live停止
             if self.live_worker_cam1:
+                # 🔹 ヒストグラム連動があれば切断
+                if hasattr(self, "hist_dialog_cam1"):
+                    try:
+                        self.live_worker_cam1.new_frame.disconnect(self.hist_dialog_cam1.update_image)
+                    except:
+                        pass
                 self.live_worker_cam1.stop()
                 self.live_worker_cam1.wait()
+                self.live_worker_cam1 = None
+
             self.liveview_running_cam1 = False
             self.ui.pushButtonLiveViewCam1.setText("Start LiveView")
             self.ui.textEditLogCam1.append("[Cam1] LiveView停止")
 
 
     def toggle_liveview_cam2(self):
+        """Cam2 LiveViewの開始・停止トグル"""
         if not self.liveview_running_cam2:
             try:
                 cam2 = self.controller.cam2  # SecondaryCamera
 
-                # UIの設定を取得して prime_for_live に渡す！
                 cam2.prime_for_live(
                     fps=self.ui.doubleSpinBoxFpsCam2.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
@@ -480,7 +490,6 @@ class MainWindow(QMainWindow):
                     reverse_y=self.ui.checkBoxReverseYCam2.isChecked()
                 )
 
-                # Liveワーカー起動
                 self.live_worker_cam2 = CameraLiveWorker(cam2)
                 self.live_worker_cam2.new_frame.connect(self.update_liveview_cam2)
                 self.live_worker_cam2.start()
@@ -490,13 +499,19 @@ class MainWindow(QMainWindow):
                 self.ui.textEditLogCam2.append("[Cam2] LiveView開始")
 
             except Exception as e:
-                self.ui.textEditLogCam2.append(f"[Cam1] LiveView開始失敗: {e}")
+                self.ui.textEditLogCam2.append(f"[Cam2] LiveView開始失敗: {e}")
 
         else:
-            # Live停止
             if self.live_worker_cam2:
+                if hasattr(self, "hist_dialog_cam2"):
+                    try:
+                        self.live_worker_cam2.new_frame.disconnect(self.hist_dialog_cam2.update_image)
+                    except:
+                        pass
                 self.live_worker_cam2.stop()
                 self.live_worker_cam2.wait()
+                self.live_worker_cam2 = None
+
             self.liveview_running_cam2 = False
             self.ui.pushButtonLiveViewCam2.setText("Start LiveView")
             self.ui.textEditLogCam2.append("[Cam2] LiveView停止")
@@ -583,20 +598,48 @@ class MainWindow(QMainWindow):
         return arr
 
     def on_histogram_button_cam1(self):
-        pixmap = self.ui.openGLWidgetImageCam1.pixmap
-        if pixmap:
-            gray_np = self.qpixmap_to_numpy(pixmap)
-            show_histogram_window(gray_np, title="Cam1 ヒストグラム")
+        if not hasattr(self, "hist_dialog_cam1") or self.hist_dialog_cam1 is None:
+            from ui.histogram_dialog import HistogramDialog
+            self.hist_dialog_cam1 = HistogramDialog(title="Cam1 ライブヒストグラム")
+
+        self.hist_dialog_cam1.show()
+
+        if self.live_worker_cam1:
+            try:
+                self.live_worker_cam1.new_frame.connect(self.hist_dialog_cam1.update_image)
+                print("✅ Cam1 histogram connected to live feed")
+            except TypeError:
+                pass
         else:
-            print("⚠️ Cam1: Live画像がありません")
+            pixmap = self.ui.openGLWidgetImageCam1.pixmap
+            if pixmap:
+                gray_np = self.qpixmap_to_numpy(pixmap)
+                self.hist_dialog_cam1.update_image(gray_np)
+            else:
+                print("⚠️ Cam1: Live画像がありません")
+
 
     def on_histogram_button_cam2(self):
-        pixmap = self.ui.openGLWidgetImageCam2.pixmap
-        if pixmap:
-            gray_np = self.qpixmap_to_numpy(pixmap)
-            show_histogram_window(gray_np, title="Cam2 ヒストグラム")
+        if not hasattr(self, "hist_dialog_cam2") or self.hist_dialog_cam2 is None:
+            from ui.histogram_dialog import HistogramDialog
+            self.hist_dialog_cam2 = HistogramDialog(title="Cam2 ライブヒストグラム")
+
+        self.hist_dialog_cam2.show()
+
+        if self.live_worker_cam2:
+            try:
+                self.live_worker_cam2.new_frame.connect(self.hist_dialog_cam2.update_image)
+                print("✅ Cam2 histogram connected to live feed")
+            except TypeError:
+                pass
         else:
-            print("⚠️ Cam2: Live画像がありません")
+            pixmap = self.ui.openGLWidgetImageCam2.pixmap
+            if pixmap:
+                gray_np = self.qpixmap_to_numpy(pixmap)
+                self.hist_dialog_cam2.update_image(gray_np)
+            else:
+                print("⚠️ Cam2: Live画像がありません")
+
 
     def disconnect_cam1(self):
         try:
