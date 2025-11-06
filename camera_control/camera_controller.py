@@ -3,18 +3,25 @@ import PySpin
 from camera_control.primary_camera_gui import PrimaryCamera
 from camera_control.secondary_camera_gui import SecondaryCamera
 
+
 class CameraController:
     def __init__(self, system):
         self.system = system
         self.cam1 = None
         self.cam2 = None
 
+    # ---------------------------------------------------------
+    # カメラ初期化
+    # ---------------------------------------------------------
     def initialize_cam1(self, serial_number: str):
         self.cam1 = PrimaryCamera(self.system, serial_number=serial_number)
 
     def initialize_cam2(self, serial_number: str):
         self.cam2 = SecondaryCamera(self.system, serial_number=serial_number)
 
+    # ---------------------------------------------------------
+    # Cam1 設定
+    # ---------------------------------------------------------
     def configure_cam1(self,
                        folder: str,
                        fps: float,
@@ -31,9 +38,9 @@ class CameraController:
                        reverse_x: bool = False,
                        reverse_y: bool = False,
                        white_balance_auto: str = "Off",
-                       balance_ratio_selector: str = "Red",
-                       balance_ratio_value: float = 1.0,
-                       ):
+                       wb_red: float = 1.0,
+                       wb_blue: float = 1.0):
+        """Cam1設定（UIのRed/Blue両方対応）"""
         os.makedirs(folder, exist_ok=True)
 
         self.cam1.prime(
@@ -52,10 +59,13 @@ class CameraController:
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value
+            wb_red=wb_red,
+            wb_blue=wb_blue,
         )
 
+    # ---------------------------------------------------------
+    # Cam2 設定
+    # ---------------------------------------------------------
     def configure_cam2(self,
                        folder: str,
                        fps: float,
@@ -73,9 +83,9 @@ class CameraController:
                        reverse_x: bool = False,
                        reverse_y: bool = False,
                        white_balance_auto: str = "Off",
-                       balance_ratio_selector: str = "Red",
-                       balance_ratio_value: float = 1.0,
-                       ):
+                       wb_red: float = 1.0,
+                       wb_blue: float = 1.0):
+        """Cam2設定（UIのRed/Blue両方対応）"""
         os.makedirs(folder, exist_ok=True)
 
         self.cam2.prime(
@@ -96,22 +106,28 @@ class CameraController:
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value
+            wb_red=wb_red,
+            wb_blue=wb_blue,
         )
 
+    # ---------------------------------------------------------
+    # シングルキャプチャ
+    # ---------------------------------------------------------
     def capture_single_frame(self, custom_filename1=None, custom_filename2=None):
         if self.cam1 is None or self.cam2 is None:
             raise RuntimeError("カメラが初期化されていません")
-        
+
         self.cam1.trigger()
         self.cam2.trigger()
-        
+
         frame1 = self.cam1.capture_frame(custom_filename=custom_filename1)
         frame2 = self.cam2.capture_frame(custom_filename=custom_filename2)
-        
+
         return frame1, frame2
 
+    # ---------------------------------------------------------
+    # 録画
+    # ---------------------------------------------------------
     def record_cam1(self, duration_sec: float):
         if self.cam1 is None:
             raise RuntimeError("Camera 1 is not initialized")
@@ -122,6 +138,9 @@ class CameraController:
             raise RuntimeError("Camera 2 is not initialized")
         self.cam2.record(duration_sec=duration_sec)
 
+    # ---------------------------------------------------------
+    # リリース
+    # ---------------------------------------------------------
     def release_cam1(self):
         if self.cam1:
             self.cam1.release()
@@ -132,15 +151,18 @@ class CameraController:
             self.cam2.release()
             self.cam2 = None
 
+    # ---------------------------------------------------------
+    # FPS情報取得
+    # ---------------------------------------------------------
     def get_max_fps(self, cam_id):
         cam_wrapper = self.cam1 if cam_id == 1 else self.cam2
         if cam_wrapper is None:
             raise RuntimeError(f"Camera {cam_id} not initialized.")
 
-        cam = cam_wrapper.camera 
-
+        cam = cam_wrapper.camera
         nodemap = cam.GetNodeMap()
         node = PySpin.CFloatPtr(nodemap.GetNode("AcquisitionFrameRate"))
+
         if PySpin.IsAvailable(node) and PySpin.IsReadable(node):
             return node.GetMax()
         else:

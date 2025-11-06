@@ -87,9 +87,9 @@ class MainWindow(QMainWindow):
                 extension=self.ui.comboBoxExtensionCam1.currentText(),
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
-                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
-                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
-                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
+                white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
+                wb_red  = self.ui.doubleSpinBoxBalanceRatioRedCam1.value(),
+                wb_blue = self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
             )
 
             # 撮影実行！
@@ -117,9 +117,9 @@ class MainWindow(QMainWindow):
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
-                white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
-                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
-                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
+                white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
+                wb_red  = self.ui.doubleSpinBoxBalanceRatioRedCam2.value(),
+                wb_blue = self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
             )
 
             self.controller.cam2.trigger()
@@ -154,9 +154,9 @@ class MainWindow(QMainWindow):
         duration_sec = self.ui.doubleSpinBoxRecordingTimeCam1.value()
         reverse_x = self.ui.checkBoxReverseXCam1.isChecked()
         reverse_y = self.ui.checkBoxReverseYCam1.isChecked()
-        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
-        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
-        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
+        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam1.currentText()
+        wb_red  = self.ui.doubleSpinBoxBalanceRatioRedCam1.value()
+        wb_blue = self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
 
         self.controller.configure_cam1(
             folder=folder,
@@ -174,8 +174,8 @@ class MainWindow(QMainWindow):
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value,
+            wb_red=wb_red,
+            wb_blue=wb_blue,
         )
 
         self.thread1 = QThread()
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
         self.ui.textEditLogCam1.append("[Cam1] Recording started...")
 
     def start_record_camera2(self):
-        was_liveview_on = self.liveview_running_cam1 #LiveViewの状態把握 
+        was_liveview_on = self.liveview_running_cam2 #LiveViewの状態把握 
         self.stop_all_liveviews() # LiveView停止
 
         folder = self.ui.lineEditSaveFolderCam2.text()
@@ -214,8 +214,8 @@ class MainWindow(QMainWindow):
         reverse_x = self.ui.checkBoxReverseXCam2.isChecked()
         reverse_y = self.ui.checkBoxReverseYCam2.isChecked()
         white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
-        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
-        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
+        wb_red  = self.ui.doubleSpinBoxBalanceRatioRedCam2.value()
+        wb_blue = self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
 
         self.controller.configure_cam2(
             folder=folder,
@@ -234,8 +234,8 @@ class MainWindow(QMainWindow):
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value,
+            wb_red=wb_red,
+            wb_blue=wb_blue,
         )
 
         self.thread2 = QThread()
@@ -265,7 +265,13 @@ class MainWindow(QMainWindow):
             self.ui.textEditLogCam1.append("[Sync Capture] Syncチェックが必要です。")
             return
 
+        # 撮影前：LiveViewの状態を記録して一時停止
+        was_cam1_live = self.liveview_running_cam1
+        was_cam2_live = self.liveview_running_cam2
+        self.stop_all_liveviews()
+
         try:
+            # 🎥 Cam1設定
             self.controller.configure_cam1(
                 folder=self.ui.lineEditSaveFolderCam1.text(),
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
@@ -282,10 +288,11 @@ class MainWindow(QMainWindow):
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
                 white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
-                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
-                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
+                wb_red=self.ui.doubleSpinBoxBalanceRatioRedCam1.value(),
+                wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
             )
 
+            # 🎥 Cam2設定
             self.controller.configure_cam2(
                 folder=self.ui.lineEditSaveFolderCam2.text(),
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
@@ -299,14 +306,15 @@ class MainWindow(QMainWindow):
                 center_roi=self.ui.checkBoxCenterROICam2.isChecked(),
                 pixel_format=self.ui.comboBoxPixelFormatCam2.currentText(),
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
-                trigger_mode='On',  # シングルキャプチャではCam2もtriggerをONに！
+                trigger_mode='On',  # 🟢 Cam2もトリガー有効化
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
                 white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
-                balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
-                balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
+                wb_red=self.ui.doubleSpinBoxBalanceRatioRedCam2.value(),
+                wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
             )
 
+            # 📸 同期撮影実行！
             frame1, frame2 = self.controller.capture_single_frame(
                 custom_filename1=f"Cam1.{self.controller.cam1.image_format}",
                 custom_filename2=f"Cam2.{self.controller.cam2.image_format}"
@@ -317,6 +325,13 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             self.ui.textEditLogCam1.append(f"[Sync Capture] エラー: {str(e)}")
+
+        finally:
+            # 🟢 撮影後：必要ならLiveViewを再開
+            self.resume_liveviews_if_needed(
+                restore_cam1=was_cam1_live,
+                restore_cam2=was_cam2_live
+            )
 
     def start_record_both_cameras(self):
 
@@ -340,9 +355,9 @@ class MainWindow(QMainWindow):
         dur1 = self.ui.doubleSpinBoxRecordingTimeCam1.value()
         reverse_x1 = self.ui.checkBoxReverseXCam1.isChecked()
         reverse_y1 = self.ui.checkBoxReverseYCam1.isChecked()
-        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam1.currentText()
-        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam1.currentText()
-        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam1.value()
+        white_balance_auto1 = self.ui.comboBoxWhiteBalanceAutoCam1.currentText()
+        wb_red1 = self.ui.doubleSpinBoxBalanceRatioRedCam1.value()
+        wb_blue1 = self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
 
         # Cam2 UI
         folder2 = self.ui.lineEditSaveFolderCam2.text()
@@ -360,9 +375,9 @@ class MainWindow(QMainWindow):
         dur2 = self.ui.doubleSpinBoxRecordingTimeCam2.value()
         reverse_x2 = self.ui.checkBoxReverseXCam2.isChecked()
         reverse_y2 = self.ui.checkBoxReverseYCam2.isChecked()
-        white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
-        balance_ratio_selector = self.ui.comboBoxBalanceRatioSelectorCam2.currentText()
-        balance_ratio_value = self.ui.doubleSpinBoxBalanceRatioCam2.value()
+        white_balance_auto2 = self.ui.comboBoxWhiteBalanceAutoCam2.currentText()
+        wb_red2 = self.ui.doubleSpinBoxBalanceRatioRedCam2.value()
+        wb_blue2 = self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
 
         self.controller.configure_cam1(
             folder=folder1,
@@ -379,9 +394,9 @@ class MainWindow(QMainWindow):
             extension=ext1,
             reverse_x=reverse_x1,
             reverse_y=reverse_y1,
-            white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value,
+            white_balance_auto=white_balance_auto1,
+            wb_red=wb_red1,
+            wb_blue=wb_blue1,
         )
 
         self.controller.configure_cam2(
@@ -400,9 +415,9 @@ class MainWindow(QMainWindow):
             trigger_mode='On',
             reverse_x=reverse_x2,
             reverse_y=reverse_y2,
-            white_balance_auto=white_balance_auto,
-            balance_ratio_selector=balance_ratio_selector,
-            balance_ratio_value=balance_ratio_value,
+            white_balance_auto=white_balance_auto2,
+            wb_red=wb_red2,
+            wb_blue=wb_blue2,
         )
 
         self.thread1 = QThread()
@@ -474,8 +489,8 @@ class MainWindow(QMainWindow):
                     reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
                     reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
                     white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
-                    balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam1.currentText(),
-                    balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam1.value(),
+                    wb_red=self.ui.doubleSpinBoxBalanceRatioRedCam1.value(),
+                    wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
                 )
 
                 # LiveViewワーカー起動
@@ -528,8 +543,8 @@ class MainWindow(QMainWindow):
                     reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
                     reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
                     white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
-                    balance_ratio_selector=self.ui.comboBoxBalanceRatioSelectorCam2.currentText(),
-                    balance_ratio_value=self.ui.doubleSpinBoxBalanceRatioCam2.value(),
+                    wb_red=self.ui.doubleSpinBoxBalanceRatioRedCam2.value(),
+                    wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
                 )
 
                 self.live_worker_cam2 = CameraLiveWorker(cam2)
@@ -561,10 +576,17 @@ class MainWindow(QMainWindow):
     def update_liveview_cam1(self, img_np):
         try:
             h, w = img_np.shape[:2]  # グレースケール・カラー両対応！
+
+            # ======== グレースケール処理 ========
             if img_np.ndim == 2:
                 qimg = QImage(img_np.data, w, h, QImage.Format_Grayscale8)
+
+            # ======== カラー処理（BGR→RGB変換） ========
             elif img_np.ndim == 3 and img_np.shape[2] == 3:
-                qimg = QImage(img_np.data, w, h, 3 * w, QImage.Format_BGR888)
+                # BGR → RGB に変換（FLIRはBGRが多い）
+                img_rgb = img_np[:, :, ::-1].copy()
+                qimg = QImage(img_rgb.data, w, h, 3 * w, QImage.Format_RGB888)
+
             else:
                 raise ValueError("Unsupported image format")
 
@@ -574,13 +596,18 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.ui.textEditLogCam1.append(f"[Cam1] 表示エラー: {e}")
 
+
     def update_liveview_cam2(self, img_np):
         try:
-            h, w = img_np.shape[:2]  # グレースケール・カラー両対応！
+            h, w = img_np.shape[:2]
+
             if img_np.ndim == 2:
                 qimg = QImage(img_np.data, w, h, QImage.Format_Grayscale8)
+
             elif img_np.ndim == 3 and img_np.shape[2] == 3:
-                qimg = QImage(img_np.data, w, h, 3 * w, QImage.Format_BGR888)
+                img_rgb = img_np[:, :, ::-1].copy()  # BGR→RGB
+                qimg = QImage(img_rgb.data, w, h, 3 * w, QImage.Format_RGB888)
+
             else:
                 raise ValueError("Unsupported image format")
 
@@ -588,7 +615,7 @@ class MainWindow(QMainWindow):
             self.ui.openGLWidgetImageCam2.setPixmap(pixmap)
 
         except Exception as e:
-            self.ui.textEditLogCam2.append(f"[Cam1] 表示エラー: {e}")
+            self.ui.textEditLogCam2.append(f"[Cam2] 表示エラー: {e}")
 
     def stop_all_liveviews(self):
         if self.liveview_running_cam1 and self.live_worker_cam1 is not None:
@@ -616,28 +643,31 @@ class MainWindow(QMainWindow):
             self.toggle_liveview_cam2()
             self.ui.textEditLogCam2.append("[Cam2] 録画後にLiveViewを再開")
 
-    # def qpixmap_to_numpy(self, pixmap):
-    #     image = pixmap.toImage().convertToFormat(QImage.Format_Grayscale8)
-    #     width = image.width()
-    #     height = image.height()
-    #     ptr = image.bits()
-    #     buffer = ptr[:width * height].tobytes()
-    #     return np.frombuffer(buffer, dtype=np.uint8).reshape((height, width))
-
     def qpixmap_to_numpy(self, pixmap):
-        image = pixmap.toImage()
+        image = pixmap.toImage().convertToFormat(QImage.Format_BGR888)
         width = image.width()
         height = image.height()
 
-        # 🔹 カラー形式に変換（BGR8）
-        image = image.convertToFormat(QImage.Format_BGR888)
-
         ptr = image.bits()
-        data = ptr.tobytes()  # ← PySide6ではこれでOK！
+        ptr.setsize(image.sizeInBytes())  # ← バッファサイズを正確に確保！
+        arr = np.frombuffer(ptr, np.uint8).reshape((height, width, 3))
 
-        arr = np.frombuffer(data, np.uint8).reshape((height, width, 3))
-        arr = arr[:, :, ::-1].copy()  # BGR→RGB
-        return arr
+        return arr.copy()  # ← 安全のためコピー（Qtバッファ切り離し）
+
+    # def qpixmap_to_numpy(self, pixmap):
+    #     image = pixmap.toImage()
+    #     width = image.width()
+    #     height = image.height()
+
+    #     # 🔹 カラー形式に変換（BGR8）
+    #     image = image.convertToFormat(QImage.Format_BGR888)
+
+    #     ptr = image.bits()
+    #     data = ptr.tobytes()  # ← PySide6ではこれでOK！
+
+    #     arr = np.frombuffer(data, np.uint8).reshape((height, width, 3))
+    #     arr = arr[:, :, ::-1].copy()  # BGR→RGB
+    #     return arr
 
     def on_histogram_button_cam1(self):
         if not hasattr(self, "hist_dialog_cam1") or self.hist_dialog_cam1 is None:
