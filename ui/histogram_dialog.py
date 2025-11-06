@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QCheckBox
+    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox
 )
 import pyqtgraph as pg
 
@@ -13,6 +13,7 @@ class HistogramDialog(QDialog):
         self.setMinimumSize(640, 500)
 
         self.image = image
+        self.log_scale = False  # ← Y軸Logスケール状態を保持
 
         # ======== メインレイアウト ========
         layout = QVBoxLayout()
@@ -23,17 +24,23 @@ class HistogramDialog(QDialog):
         self.apply_matplotlib_style(self.plot_widget)
         layout.addWidget(self.plot_widget)
 
-        # ======== チェックボックス ========
+        # ======== チェックボックス群 ========
         checkbox_layout = QHBoxLayout()
         self.cb_gray = QCheckBox("Gray")
         self.cb_r = QCheckBox("R")
         self.cb_g = QCheckBox("G")
         self.cb_b = QCheckBox("B")
+        self.cb_log = QCheckBox("Log表示（Y軸）")  # ← Log表示追加
 
         for cb in [self.cb_gray, self.cb_r, self.cb_g, self.cb_b]:
             checkbox_layout.addWidget(cb)
             cb.stateChanged.connect(self.update_histogram)
             cb.setChecked(True)
+
+        # Log表示チェックボックス設定
+        self.cb_log.stateChanged.connect(self.toggle_log_scale)
+        checkbox_layout.addWidget(self.cb_log)
+
         layout.addLayout(checkbox_layout)
 
         # ======== 統計ラベル ========
@@ -42,7 +49,6 @@ class HistogramDialog(QDialog):
         layout.addWidget(self.label_stats)
 
         # ======== カラー設定 ========
-        # RGBA形式 (最後の数値は透明度)
         self.colors = {
             "gray": (80, 80, 80, 100),
             "r": (220, 70, 70, 80),
@@ -69,13 +75,11 @@ class HistogramDialog(QDialog):
         plot_widget.setLabel("left", "Frequency", color="#000000", size="13pt")
         for axis in ["bottom", "left"]:
             ax = plot_widget.getAxis(axis)
-            ax.setGrid(255)  # 255: デフォルトの色に戻す（内部的にグリッド描画に影響）
             ax.setTextPen(pg.mkPen(color=(0, 0, 0), width=1))
             ax.setTickFont(pg.QtGui.QFont("Arial", 9))
 
         vb = plot_widget.getPlotItem().getViewBox()
         vb.setBorder(pg.mkPen(color=(0, 0, 0), width=2))
-
         plot_widget.addLegend(labelTextColor="#000000")
 
     # ======== LiveView から画像更新 ========
@@ -89,6 +93,11 @@ class HistogramDialog(QDialog):
             self.plot_histogram()
             self.update_stats()
 
+    # ======== Logスケール切替 ========
+    def toggle_log_scale(self):
+        self.log_scale = self.cb_log.isChecked()
+        self.plot_histogram()
+
     # ======== ヒストグラム描画 ========
     def plot_histogram(self):
         if self.image is None:
@@ -97,10 +106,21 @@ class HistogramDialog(QDialog):
         img = self.image
         self.plot_widget.clear()
 
+        # Y軸Logスケール切替
+        self.plot_widget.setLogMode(False, self.log_scale)
+
+        # === log(0)回避付きの安全なヒストグラム関数 ===
+        def safe_hist(data):
+            hist, bins = np.histogram(data, bins=256, range=(0, 255))
+            if self.log_scale:
+                # log(0) を防ぐため、0を1に置き換え
+                hist = np.clip(hist, 1, None)
+            return hist, bins
+
         # ==== グレースケール画像 ====
         if img.ndim == 2:
             if self.cb_gray.isChecked():
-                hist, bins = np.histogram(img, bins=256, range=(0, 255))
+                hist, bins = safe_hist(img)
                 self.plot_widget.plot(
                     bins[:-1],
                     hist,
@@ -113,7 +133,7 @@ class HistogramDialog(QDialog):
         # ==== カラー画像 ====
         elif img.ndim == 3 and img.shape[2] == 3:
             if self.cb_r.isChecked():
-                hist, bins = np.histogram(img[:, :, 0], bins=256, range=(0, 255))
+                hist, bins = safe_hist(img[:, :, 0])
                 self.plot_widget.plot(
                     bins[:-1],
                     hist,
@@ -123,7 +143,7 @@ class HistogramDialog(QDialog):
                     name="R",
                 )
             if self.cb_g.isChecked():
-                hist, bins = np.histogram(img[:, :, 1], bins=256, range=(0, 255))
+                hist, bins = safe_hist(img[:, :, 1])
                 self.plot_widget.plot(
                     bins[:-1],
                     hist,
@@ -133,7 +153,7 @@ class HistogramDialog(QDialog):
                     name="G",
                 )
             if self.cb_b.isChecked():
-                hist, bins = np.histogram(img[:, :, 2], bins=256, range=(0, 255))
+                hist, bins = safe_hist(img[:, :, 2])
                 self.plot_widget.plot(
                     bins[:-1],
                     hist,
@@ -144,7 +164,7 @@ class HistogramDialog(QDialog):
                 )
             if self.cb_gray.isChecked():
                 gray = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
-                hist, bins = np.histogram(gray, bins=256, range=(0, 255))
+                hist, bins = safe_hist(gray)
                 self.plot_widget.plot(
                     bins[:-1],
                     hist,
