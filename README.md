@@ -12,9 +12,6 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
 ---
 
 ## 🖥 アプリ外観
-
-### 起動直後（カメラ未接続）と接続後（ライブ表示）
-
 <p align="center">
   <figure style="display:inline-block; text-align:center; margin:10px;">
     <img src="./images/app_startup.png" width="45%" alt="Startup View（カメラ未接続）"/>
@@ -28,7 +25,7 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
 
 <p align="center">
   <figure style="text-align:center;">
-    <img src="./images/app_histogram.png" width="60%" alt="Histogram View（Gray + RGB 表示）"/>
+    <img src="./images/app_histogram.png" width="45%" alt="Histogram View（Gray + RGB 表示）"/>
     <figcaption>ヒストグラム表示（Gray + RGB）</figcaption>
   </figure>
 </p>
