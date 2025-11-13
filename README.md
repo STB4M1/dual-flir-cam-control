@@ -12,27 +12,25 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
 ---
 
 ## 🖥 アプリ外観
+<table style="border-collapse: collapse; border: none;">
+  <tr style="border: none; background: none;">
+    <td align="center" style="border: none; background: none;">
+      <img src="./images/app_startup.png" height="200px" alt="Startup View"/><br>
+      <sub>起動直後の画面（カメラ未接続）</sub>
+    </td>
+    <td align="center" style="border: none; background: none;">
+      <img src="./images/app_liveview.png" height="200px" alt="Live View"/><br>
+      <sub>カメラ接続・ライブ表示中の画面</sub>
+    </td>
+  </tr>
 
-### 起動直後（カメラ未接続）と接続後（ライブ表示）
-
-<p align="center">
-  <figure style="display:inline-block; text-align:center; margin:10px;">
-    <img src="./images/app_startup.png" width="45%" alt="Startup View（カメラ未接続）"/>
-    <figcaption>起動直後の画面（カメラ未接続）</figcaption>
-  </figure>
-  <figure style="display:inline-block; text-align:center; margin:10px;">
-    <img src="./images/app_liveview.png" width="45%" alt="Live View（カメラ接続）"/>
-    <figcaption>カメラ接続・ライブ表示中の画面</figcaption>
-  </figure>
-</p>
-
-<p align="center">
-  <figure style="text-align:center;">
-    <img src="./images/app_histogram.png" width="60%" alt="Histogram View（Gray + RGB 表示）"/>
-    <figcaption>ヒストグラム表示（Gray + RGB）</figcaption>
-  </figure>
-</p>
-
+  <tr style="border: none; background: none;">
+    <td align="center" colspan="2" style="border: none; background: none;">
+      <img src="./images/app_histogram.png" height="200px" alt="Histogram"/><br>
+      <sub>ヒストグラム表示（Gray + RGB）</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
