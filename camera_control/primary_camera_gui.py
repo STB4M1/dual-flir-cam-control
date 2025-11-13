@@ -5,11 +5,12 @@ import time
 
 
 class PrimaryCamera:
-    def __init__(self, system, serial_number: int = None):
+    def __init__(self, system, serial_number: int = None, name="Camera"):
         self.system = system
         self.cam_list = system.GetCameras()
         self.camera = self.cam_list.GetBySerial(str(serial_number))
         self.camera.Init()
+        self.name = name
         self.folder = None
         self.frame_counter = 0
         self._primed = False
@@ -36,6 +37,7 @@ class PrimaryCamera:
         offset_x: int = None,
         offset_y: int = None,
         pixel_format_name: str = 'Mono8',
+        trigger_mode: str = 'On',
         reverse_x: bool = False,
         reverse_y: bool = False,
         white_balance_auto: str = "Off",             
@@ -213,6 +215,10 @@ class PrimaryCamera:
             if image_result.IsIncomplete():
                 print("[PrimaryCamera] Incomplete image")
                 return None
+
+            timestamp = image_result.GetTimeStamp()
+            print(f"[{self.name}] Timestamp = {timestamp}")
+            
             img_np = image_result.GetNDArray()
 
             if return_numpy:

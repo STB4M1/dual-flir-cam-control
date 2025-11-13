@@ -14,10 +14,10 @@ class CameraController:
     # カメラ初期化
     # ---------------------------------------------------------
     def initialize_cam1(self, serial_number: str):
-        self.cam1 = PrimaryCamera(self.system, serial_number=serial_number)
+        self.cam1 = PrimaryCamera(self.system, serial_number=serial_number, name="Cam1")
 
     def initialize_cam2(self, serial_number: str):
-        self.cam2 = SecondaryCamera(self.system, serial_number=serial_number)
+        self.cam2 = SecondaryCamera(self.system, serial_number=serial_number, name="Cam2")
 
     # ---------------------------------------------------------
     # Cam1 設定
@@ -35,6 +35,7 @@ class CameraController:
                        center_roi: bool,
                        pixel_format: str,
                        extension: str,
+                       trigger_mode: str = 'On',
                        reverse_x: bool = False,
                        reverse_y: bool = False,
                        white_balance_auto: str = "Off",
@@ -56,6 +57,7 @@ class CameraController:
             center_roi=center_roi,
             pixel_format_name=pixel_format,
             image_format=extension,
+            trigger_mode=trigger_mode,
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
@@ -111,7 +113,7 @@ class CameraController:
         )
 
     # ---------------------------------------------------------
-    # シングルキャプチャ
+    # シングルキャプチャ (ハード同期撮影用)
     # ---------------------------------------------------------
     def capture_single_frame(self, custom_filename1=None, custom_filename2=None):
         if self.cam1 is None or self.cam2 is None:
