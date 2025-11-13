@@ -13,25 +13,24 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
 
 ## 🖥 アプリ外観
 <table style="border-collapse: collapse; border: none;">
-  <tr style="border: none;">
-    <td align="center" style="border: none;">
+  <tr style="border: none; background: none;">
+    <td align="center" style="border: none; background: none;">
       <img src="./images/app_startup.png" height="200px" alt="Startup View"/><br>
       <sub>起動直後の画面（カメラ未接続）</sub>
     </td>
-    <td align="center" style="border: none;">
+    <td align="center" style="border: none; background: none;">
       <img src="./images/app_liveview.png" height="200px" alt="Live View"/><br>
       <sub>カメラ接続・ライブ表示中の画面</sub>
     </td>
   </tr>
 
-  <tr style="border: none;">
-    <td align="center" colspan="2" style="border: none;">
+  <tr style="border: none; background: none;">
+    <td align="center" colspan="2" style="border: none; background: none;">
       <img src="./images/app_histogram.png" height="200px" alt="Histogram"/><br>
-      <sub>ヒストグラム表示</sub>
+      <sub>ヒストグラム表示（Gray + RGB）</sub>
     </td>
   </tr>
 </table>
-
 
 ---
 
