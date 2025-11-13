@@ -37,7 +37,8 @@ dist/
 
 # Allow images folder
 !images/app_startup.png
-!images/app_liveview.png
+!images/app_liveview_color.png
+!images/app_liveview_gray.png
 !images/app_histogram.png
 
 # CMake/Make等（C++やQt使うなら）
