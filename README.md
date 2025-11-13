@@ -24,12 +24,12 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
   <!-- 2行目：LiveView (color + gray) -->
   <tr style="border: none; background: none;">
     <td align="center" style="border: none; background: none; padding: 10px;">
-      <img src="./images/app_liveview_color.png" height="200px" alt="Live View (Color)" /><br>
-      <sub>ライブビュー（カラー）</sub>
-    </td>
-    <td align="center" style="border: none; background: none; padding: 10px;">
       <img src="./images/app_liveview_gray.png" height="200px" alt="Live View (Gray)" /><br>
       <sub>ライブビュー（グレー）</sub>
+    </td>
+    <td align="center" style="border: none; background: none; padding: 10px;">
+      <img src="./images/app_liveview_color.png" height="200px" alt="Live View (Color)" /><br>
+      <sub>ライブビュー（カラー）</sub>
     </td>
   </tr>
 
