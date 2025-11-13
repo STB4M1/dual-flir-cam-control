@@ -6,11 +6,12 @@ import cv2
 
 
 class SecondaryCamera:
-    def __init__(self, system, serial_number: int = None):
+    def __init__(self, system, serial_number: int = None, name="Camera"):
         self.system = system
         self.cam_list = system.GetCameras()
         self.camera = self.cam_list.GetBySerial(str(serial_number))
         self.camera.Init()
+        self.name = name
         self.folder = None
         self.frame_counter = 0
         self._primed = False
@@ -244,6 +245,9 @@ class SecondaryCamera:
                 print("[SecondaryCamera] Incomplete image")
                 return None
 
+            timestamp = image_result.GetTimeStamp()
+            print(f"[{self.name}] Timestamp = {timestamp}")
+        
             img_np = image_result.GetNDArray()
 
             if return_numpy:

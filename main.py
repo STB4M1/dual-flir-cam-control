@@ -71,6 +71,13 @@ class MainWindow(QMainWindow):
             self.ui.lineEditSaveFolderCam2.setText(folder)
 
     def capture_single_frame_cam1(self):
+        if self.ui.checkBoxSyncCheckCam1_2.isChecked():
+            self.ui.textEditLogCam1.append("[Single Capture] 同期モードを解除してください。")
+            return
+
+        was_live = self.liveview_running_cam1
+        self.stop_liveview_cam1()   # ← Cam1だけ停止！
+
         try:
             self.controller.configure_cam1(
                 folder=self.ui.lineEditSaveFolderCam1.text(),
@@ -85,6 +92,7 @@ class MainWindow(QMainWindow):
                 center_roi=self.ui.checkBoxCenterROICam1.isChecked(),
                 pixel_format=self.ui.comboBoxPixelFormatCam1.currentText(),
                 extension=self.ui.comboBoxExtensionCam1.currentText(),
+                trigger_mode='Off', 
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
                 white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
@@ -100,7 +108,18 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.ui.textEditLogCam1.append(f"[Cam1] 撮影エラー: {str(e)}")
 
+        finally:
+            if was_live:
+                self.resume_liveview_cam1()
+
     def capture_single_frame_cam2(self):
+        if self.ui.checkBoxSyncCheckCam1_2.isChecked():
+            self.ui.textEditLogCam2.append("[Single Capture] 同期モードを解除してください。")
+            return
+
+        was_live = self.liveview_running_cam2
+        self.stop_liveview_cam2()
+
         try:
             self.controller.configure_cam2(
                 folder=self.ui.lineEditSaveFolderCam2.text(),
@@ -115,6 +134,7 @@ class MainWindow(QMainWindow):
                 center_roi=self.ui.checkBoxCenterROICam2.isChecked(),
                 pixel_format=self.ui.comboBoxPixelFormatCam2.currentText(),
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
+                trigger_mode='Off', 
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
                 white_balance_auto = self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
@@ -129,6 +149,10 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.ui.textEditLogCam2.append(f"[Cam2] 撮影エラー: {str(e)}")
 
+        finally:
+            if was_live:
+                self.resume_liveview_cam2() 
+
     def handle_record_cam1(self):
         if self.ui.checkBoxSyncCheckCam1_2.isChecked():
             self.start_record_both_cameras()
@@ -136,6 +160,10 @@ class MainWindow(QMainWindow):
             self.start_record_camera1()
 
     def start_record_camera1(self):
+        if self.ui.checkBoxSyncCheckCam1_2.isChecked():
+            self.ui.textEditLogCam1.append("[Single Capture] 同期モードを解除してください。")
+            return
+
         was_liveview_on = self.liveview_running_cam1 #LiveViewの状態把握 
         self.stop_all_liveviews() # LiveView停止
 
@@ -171,6 +199,7 @@ class MainWindow(QMainWindow):
             center_roi=center_roi,
             pixel_format=pixel_format,
             extension=extension,
+            trigger_mode='Off',
             reverse_x=reverse_x,
             reverse_y=reverse_y,
             white_balance_auto=white_balance_auto,
@@ -195,6 +224,10 @@ class MainWindow(QMainWindow):
         self.ui.textEditLogCam1.append("[Cam1] Recording started...")
 
     def start_record_camera2(self):
+        if self.ui.checkBoxSyncCheckCam1_2.isChecked():
+            self.ui.textEditLogCam2.append("[Single Capture] 同期モードを解除してください。")
+            return
+
         was_liveview_on = self.liveview_running_cam2 #LiveViewの状態把握 
         self.stop_all_liveviews() # LiveView停止
 
@@ -261,17 +294,18 @@ class MainWindow(QMainWindow):
             self.ui.textEditLogCam1.append("[Dual] 同時録画にはSyncチェックが必要です。")
 
     def capture_single_frame_sync(self):
+        # ハード同期 → Syncチェック必須
         if not self.ui.checkBoxSyncCheckCam1_2.isChecked():
             self.ui.textEditLogCam1.append("[Sync Capture] Syncチェックが必要です。")
             return
 
-        # 撮影前：LiveViewの状態を記録して一時停止
+        # LiveViewの状態保存 & 停止
         was_cam1_live = self.liveview_running_cam1
         was_cam2_live = self.liveview_running_cam2
         self.stop_all_liveviews()
 
         try:
-            # 🎥 Cam1設定
+            # Cam1（Primary）設定：ハード同期（TriggerMode=On）
             self.controller.configure_cam1(
                 folder=self.ui.lineEditSaveFolderCam1.text(),
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
@@ -285,6 +319,7 @@ class MainWindow(QMainWindow):
                 center_roi=self.ui.checkBoxCenterROICam1.isChecked(),
                 pixel_format=self.ui.comboBoxPixelFormatCam1.currentText(),
                 extension=self.ui.comboBoxExtensionCam1.currentText(),
+                trigger_mode='On',  # 🔥 ここが同期の要
                 reverse_x=self.ui.checkBoxReverseXCam1.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam1.isChecked(),
                 white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam1.currentText(),
@@ -292,7 +327,7 @@ class MainWindow(QMainWindow):
                 wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam1.value()
             )
 
-            # 🎥 Cam2設定
+            # Cam2（Secondary）設定：ハード同期（TriggerMode=On）
             self.controller.configure_cam2(
                 folder=self.ui.lineEditSaveFolderCam2.text(),
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
@@ -306,7 +341,7 @@ class MainWindow(QMainWindow):
                 center_roi=self.ui.checkBoxCenterROICam2.isChecked(),
                 pixel_format=self.ui.comboBoxPixelFormatCam2.currentText(),
                 extension=self.ui.comboBoxExtensionCam2.currentText(),
-                trigger_mode='On',  # 🟢 Cam2もトリガー有効化
+                trigger_mode='On',  # 🔥 ここが同期の要
                 reverse_x=self.ui.checkBoxReverseXCam2.isChecked(),
                 reverse_y=self.ui.checkBoxReverseYCam2.isChecked(),
                 white_balance_auto=self.ui.comboBoxWhiteBalanceAutoCam2.currentText(),
@@ -314,7 +349,7 @@ class MainWindow(QMainWindow):
                 wb_blue=self.ui.doubleSpinBoxBalanceRatioBlueCam2.value()
             )
 
-            # 📸 同期撮影実行！
+            # 外部トリガ1発 → 完全ハード同期撮影！
             frame1, frame2 = self.controller.capture_single_frame(
                 custom_filename1=f"Cam1.{self.controller.cam1.image_format}",
                 custom_filename2=f"Cam2.{self.controller.cam2.image_format}"
@@ -327,13 +362,16 @@ class MainWindow(QMainWindow):
             self.ui.textEditLogCam1.append(f"[Sync Capture] エラー: {str(e)}")
 
         finally:
-            # 🟢 撮影後：必要ならLiveViewを再開
+            # 撮影後：元のLiveView状態に戻す
             self.resume_liveviews_if_needed(
                 restore_cam1=was_cam1_live,
                 restore_cam2=was_cam2_live
             )
 
     def start_record_both_cameras(self):
+        if not self.ui.checkBoxSyncCheckCam1_2.isChecked():
+            self.ui.textEditLogCam1.append("[Sync Capture] Syncチェックが必要です。")
+            return
 
         was_cam1_live = self.liveview_running_cam1 # LiveViewの状態を保存
         was_cam2_live = self.liveview_running_cam2
@@ -392,6 +430,7 @@ class MainWindow(QMainWindow):
             center_roi=center_roi1,
             pixel_format=fmt1,
             extension=ext1,
+            trigger_mode='On',
             reverse_x=reverse_x1,
             reverse_y=reverse_y1,
             white_balance_auto=white_balance_auto1,
@@ -634,6 +673,30 @@ class MainWindow(QMainWindow):
             self.ui.pushButtonLiveViewCam2.setText("Start LiveView")
             self.ui.textEditLogCam2.append("[Cam2] LiveView 強制停止")
 
+    def stop_liveview_cam1(self):
+        if self.liveview_running_cam1 and self.live_worker_cam1 is not None:
+            try:
+                self.live_worker_cam1.stop()
+                self.live_worker_cam1.wait()
+                self.live_worker_cam1 = None
+                self.liveview_running_cam1 = False
+                self.ui.pushButtonLiveViewCam1.setText("Start LiveView")
+                self.ui.textEditLogCam1.append("[Cam1] LiveView 強制停止")
+            except Exception as e:
+                self.ui.textEditLogCam1.append(f"[Cam1] LiveView停止エラー: {str(e)}")
+
+    def stop_liveview_cam2(self):
+        if self.liveview_running_cam2 and self.live_worker_cam2 is not None:
+            try:
+                self.live_worker_cam2.stop()
+                self.live_worker_cam2.wait()
+                self.live_worker_cam2 = None
+                self.liveview_running_cam2 = False
+                self.ui.pushButtonLiveViewCam2.setText("Start LiveView")
+                self.ui.textEditLogCam2.append("[Cam2] LiveView 強制停止")
+            except Exception as e:
+                self.ui.textEditLogCam2.append(f"[Cam2] LiveView停止エラー: {str(e)}")
+
     def resume_liveviews_if_needed(self, restore_cam1: bool, restore_cam2: bool):
         if restore_cam1:
             self.toggle_liveview_cam1()
@@ -642,6 +705,23 @@ class MainWindow(QMainWindow):
         if restore_cam2:
             self.toggle_liveview_cam2()
             self.ui.textEditLogCam2.append("[Cam2] 録画後にLiveViewを再開")
+
+    def resume_liveview_cam1(self):
+        if not self.liveview_running_cam1:
+            try:
+                self.toggle_liveview_cam1()
+                self.ui.textEditLogCam1.append("[Cam1] 単体撮影後にLiveViewを再開")
+            except Exception as e:
+                self.ui.textEditLogCam1.append(f"[Cam1] LiveView再開エラー: {str(e)}")
+
+
+    def resume_liveview_cam2(self):
+        if not self.liveview_running_cam2:
+            try:
+                self.toggle_liveview_cam2()
+                self.ui.textEditLogCam2.append("[Cam2] 単体撮影後にLiveViewを再開")
+            except Exception as e:
+                self.ui.textEditLogCam2.append(f"[Cam2] LiveView再開エラー: {str(e)}")
 
     def qpixmap_to_numpy(self, pixmap):
         image = pixmap.toImage().convertToFormat(QImage.Format_BGR888)
