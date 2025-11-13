@@ -16,7 +16,7 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
   <!-- 1行目：Startup -->
   <tr style="border: none; background: none;">
     <td align="center" colspan="2" style="border: none; background: none; padding: 10px;">
-      <img src="./images/app_startup.png" height="240px" alt="Startup View"/><br>
+      <img src="./images/app_startup.png" height="200px" alt="Startup View"/><br>
       <sub>起動直後の画面（カメラ未接続）</sub>
     </td>
   </tr>
@@ -24,11 +24,11 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
   <!-- 2行目：LiveView (color + gray) -->
   <tr style="border: none; background: none;">
     <td align="center" style="border: none; background: none; padding: 10px;">
-      <img src="./images/app_liveview_color.png" height="240px" alt="Live View (Color)" /><br>
+      <img src="./images/app_liveview_color.png" height="200px" alt="Live View (Color)" /><br>
       <sub>ライブビュー（カラー）</sub>
     </td>
     <td align="center" style="border: none; background: none; padding: 10px;">
-      <img src="./images/app_liveview_gray.png" height="240px" alt="Live View (Gray)" /><br>
+      <img src="./images/app_liveview_gray.png" height="200px" alt="Live View (Gray)" /><br>
       <sub>ライブビュー（グレー）</sub>
     </td>
   </tr>
@@ -36,7 +36,7 @@ Teledyne FLIR 社の公式 Spinnaker SDK（Python バインディング：PySpin
   <!-- 3行目：Histogram -->
   <tr style="border: none; background: none;">
     <td align="center" colspan="2" style="border: none; background: none; padding: 10px;">
-      <img src="./images/app_histogram.png" height="240px" alt="Histogram"/><br>
+      <img src="./images/app_histogram.png" height="200px" alt="Histogram"/><br>
       <sub>ヒストグラム表示（Gray + RGB）</sub>
     </td>
   </tr>
