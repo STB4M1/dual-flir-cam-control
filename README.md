@@ -91,7 +91,7 @@ Qt Designer で設計した `.ui` ファイル（例：mainwindow.ui）は、
 **PySide6 の UI コンパイラ (pyside6-uic)** を使用してPythonコードへ変換します。
 
 ```bash
-pyside6-uic mainwindow.ui -o ./ui/ui_mainwindow.py
+pyside6-uic ./ui/mainwindow.ui -o ./ui/ui_mainwindow.py
 ```
 
 💡 PowerShell 例（Windows）
