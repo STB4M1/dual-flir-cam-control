@@ -976,7 +976,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>C:/Users/mitsu/Downloads</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEditSaveFolderCam2">
@@ -989,7 +989,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>C:/Users/mitsu/Downloads</string>
+     <string/>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonStartRecordCam1">
