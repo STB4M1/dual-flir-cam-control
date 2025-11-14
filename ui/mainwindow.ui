@@ -975,6 +975,9 @@
       <height>21</height>
      </rect>
     </property>
+    <property name="text">
+     <string>C:/Users/mitsu/Downloads</string>
+    </property>
    </widget>
    <widget class="QLineEdit" name="lineEditSaveFolderCam2">
     <property name="geometry">
@@ -984,6 +987,9 @@
       <width>151</width>
       <height>24</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>C:/Users/mitsu/Downloads</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonStartRecordCam1">
