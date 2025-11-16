@@ -737,31 +737,27 @@ class MainWindow(QMainWindow):
 
         return arr.copy()  # ← 安全のためコピー（Qtバッファ切り離し）
 
-    # def qpixmap_to_numpy(self, pixmap):
-    #     image = pixmap.toImage()
-    #     width = image.width()
-    #     height = image.height()
-
-    #     # 🔹 カラー形式に変換（BGR8）
-    #     image = image.convertToFormat(QImage.Format_BGR888)
-
-    #     ptr = image.bits()
-    #     data = ptr.tobytes()  # ← PySide6ではこれでOK！
-
-    #     arr = np.frombuffer(data, np.uint8).reshape((height, width, 3))
-    #     arr = arr[:, :, ::-1].copy()  # BGR→RGB
-    #     return arr
-
     def on_histogram_button_cam1(self):
         if not hasattr(self, "hist_dialog_cam1") or self.hist_dialog_cam1 is None:
             from ui.histogram_dialog import HistogramDialog
-            self.hist_dialog_cam1 = HistogramDialog(title="Cam1 ライブヒストグラム")
 
+            # ★ PixelFormat を取得して渡す
+            pf = self.ui.comboBoxPixelFormatCam1.currentText()
+
+            self.hist_dialog_cam1 = HistogramDialog(
+                title="Cam1 ライブヒストグラム",
+                pixel_format=pf
+            )
+
+        # 表示
         self.hist_dialog_cam1.show()
 
+        # ライブ接続
         if self.live_worker_cam1:
             try:
-                self.live_worker_cam1.new_frame.connect(self.hist_dialog_cam1.update_image)
+                self.live_worker_cam1.new_frame.connect(
+                    self.hist_dialog_cam1.update_image
+                )
                 print("✅ Cam1 histogram connected to live feed")
             except TypeError:
                 pass
@@ -777,13 +773,24 @@ class MainWindow(QMainWindow):
     def on_histogram_button_cam2(self):
         if not hasattr(self, "hist_dialog_cam2") or self.hist_dialog_cam2 is None:
             from ui.histogram_dialog import HistogramDialog
-            self.hist_dialog_cam2 = HistogramDialog(title="Cam2 ライブヒストグラム")
 
+            # ★ PixelFormat を取得して渡す
+            pf = self.ui.comboBoxPixelFormatCam2.currentText()
+
+            self.hist_dialog_cam2 = HistogramDialog(
+                title="Cam2 ライブヒストグラム",
+                pixel_format=pf
+            )
+
+        # 表示
         self.hist_dialog_cam2.show()
 
+        # ライブ接続
         if self.live_worker_cam2:
             try:
-                self.live_worker_cam2.new_frame.connect(self.hist_dialog_cam2.update_image)
+                self.live_worker_cam2.new_frame.connect(
+                    self.hist_dialog_cam2.update_image
+                )
                 print("✅ Cam2 histogram connected to live feed")
             except TypeError:
                 pass
