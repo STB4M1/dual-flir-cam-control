@@ -12,6 +12,7 @@ from ui.histogram_dialog import show_histogram_window
 from ui.histogram_dialog import HistogramDialog
 import PySpin
 import numpy as np
+import time
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -555,6 +556,7 @@ class MainWindow(QMainWindow):
                         pass
                 self.live_worker_cam1.stop()
                 self.live_worker_cam1.wait()
+                time.sleep(0.1)
                 self.live_worker_cam1 = None
 
             self.liveview_running_cam1 = False
@@ -606,6 +608,7 @@ class MainWindow(QMainWindow):
                         pass
                 self.live_worker_cam2.stop()
                 self.live_worker_cam2.wait()
+                time.sleep(0.1)
                 self.live_worker_cam2 = None
 
             self.liveview_running_cam2 = False

@@ -21,7 +21,7 @@ class CameraLiveWorker(QThread):
         self._running = True
 
         try:
-            self.camera.trigger()  # BeginAcquisition 相当
+            # self.camera.trigger()  # BeginAcquisition 相当
             time.sleep(0.1)
         except Exception as e:
             print(f"[CameraLiveWorker] Trigger error: {e}")
