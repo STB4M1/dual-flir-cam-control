@@ -12,6 +12,7 @@ from ui.histogram_dialog import show_histogram_window
 from ui.histogram_dialog import HistogramDialog
 import PySpin
 import numpy as np
+import time
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -84,6 +85,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                 width=self.ui.spinBoxWidthCam1.value(),
                 height=self.ui.spinBoxHeightCam1.value(),
@@ -126,6 +128,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                 width=self.ui.spinBoxWidthCam2.value(),
                 height=self.ui.spinBoxHeightCam2.value(),
@@ -171,6 +174,7 @@ class MainWindow(QMainWindow):
         fps = self.ui.doubleSpinBoxFpsCam1.value()
         exposure_time = self.ui.doubleSpinBoxExposureCam1.value()
         gain_mode = self.ui.comboBoxGainCam1.currentText()
+        gain_value = self.ui.doubleSpinBoxGainCam1.value()
         exposure_mode = self.ui.comboBoxExposureCam1.currentText()
         width = self.ui.spinBoxWidthCam1.value()
         height = self.ui.spinBoxHeightCam1.value()
@@ -191,6 +195,7 @@ class MainWindow(QMainWindow):
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_mode,
             width=width,
             height=height,
@@ -235,6 +240,7 @@ class MainWindow(QMainWindow):
         fps = self.ui.doubleSpinBoxFpsCam2.value()
         exposure_time = self.ui.doubleSpinBoxExposureCam2.value()
         gain_mode = self.ui.comboBoxGainCam2.currentText()
+        gain_value = self.ui.doubleSpinBoxGainCam2.value()
         exposure_mode = self.ui.comboBoxExposureCam2.currentText()
         width = self.ui.spinBoxWidthCam2.value()
         height = self.ui.spinBoxHeightCam2.value()
@@ -255,6 +261,7 @@ class MainWindow(QMainWindow):
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_mode,
             width=width,
             height=height,
@@ -311,6 +318,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                 width=self.ui.spinBoxWidthCam1.value(),
                 height=self.ui.spinBoxHeightCam1.value(),
@@ -333,6 +341,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                 width=self.ui.spinBoxWidthCam2.value(),
                 height=self.ui.spinBoxHeightCam2.value(),
@@ -382,6 +391,7 @@ class MainWindow(QMainWindow):
         fps1 = self.ui.doubleSpinBoxFpsCam1.value()
         exposure1 = self.ui.doubleSpinBoxExposureCam1.value()
         gain_mode1 = self.ui.comboBoxGainCam1.currentText()
+        gain_value1 = self.ui.doubleSpinBoxGainCam1.value()
         exposure_mode1 = self.ui.comboBoxExposureCam1.currentText()
         width1 = self.ui.spinBoxWidthCam1.value()
         height1 = self.ui.spinBoxHeightCam1.value()
@@ -402,6 +412,7 @@ class MainWindow(QMainWindow):
         fps2 = self.ui.doubleSpinBoxFpsCam2.value()
         exposure2 = self.ui.doubleSpinBoxExposureCam2.value()
         gain_mode2 = self.ui.comboBoxGainCam2.currentText()
+        gain_value2 = self.ui.doubleSpinBoxGainCam2.value()
         exposure_mode2 = self.ui.comboBoxExposureCam2.currentText()
         width2 = self.ui.spinBoxWidthCam2.value()
         height2 = self.ui.spinBoxHeightCam2.value()
@@ -422,6 +433,7 @@ class MainWindow(QMainWindow):
             fps=fps1,
             exposure_time=exposure1,
             gain_auto_mode=gain_mode1,
+            gain_value=gain_value1,
             exposure_auto_mode=exposure_mode1,
             width=width1,
             height=height1,
@@ -443,6 +455,7 @@ class MainWindow(QMainWindow):
             fps=fps2,
             exposure_time=exposure2,
             gain_auto_mode=gain_mode2,
+            gain_value=gain_value2,
             exposure_auto_mode=exposure_mode2,
             width=width2,
             height=height2,
@@ -518,6 +531,7 @@ class MainWindow(QMainWindow):
                     fps=self.ui.doubleSpinBoxFpsCam1.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                     gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                    gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                     exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                     width=self.ui.spinBoxWidthCam1.value(),
                     height=self.ui.spinBoxHeightCam1.value(),
@@ -555,6 +569,7 @@ class MainWindow(QMainWindow):
                         pass
                 self.live_worker_cam1.stop()
                 self.live_worker_cam1.wait()
+                time.sleep(0.1)
                 self.live_worker_cam1 = None
 
             self.liveview_running_cam1 = False
@@ -572,6 +587,7 @@ class MainWindow(QMainWindow):
                     fps=self.ui.doubleSpinBoxFpsCam2.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                     gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                    gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                     exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                     width=self.ui.spinBoxWidthCam2.value(),
                     height=self.ui.spinBoxHeightCam2.value(),
@@ -606,6 +622,7 @@ class MainWindow(QMainWindow):
                         pass
                 self.live_worker_cam2.stop()
                 self.live_worker_cam2.wait()
+                time.sleep(0.1)
                 self.live_worker_cam2 = None
 
             self.liveview_running_cam2 = False
@@ -734,31 +751,27 @@ class MainWindow(QMainWindow):
 
         return arr.copy()  # ← 安全のためコピー（Qtバッファ切り離し）
 
-    # def qpixmap_to_numpy(self, pixmap):
-    #     image = pixmap.toImage()
-    #     width = image.width()
-    #     height = image.height()
-
-    #     # 🔹 カラー形式に変換（BGR8）
-    #     image = image.convertToFormat(QImage.Format_BGR888)
-
-    #     ptr = image.bits()
-    #     data = ptr.tobytes()  # ← PySide6ではこれでOK！
-
-    #     arr = np.frombuffer(data, np.uint8).reshape((height, width, 3))
-    #     arr = arr[:, :, ::-1].copy()  # BGR→RGB
-    #     return arr
-
     def on_histogram_button_cam1(self):
         if not hasattr(self, "hist_dialog_cam1") or self.hist_dialog_cam1 is None:
             from ui.histogram_dialog import HistogramDialog
-            self.hist_dialog_cam1 = HistogramDialog(title="Cam1 ライブヒストグラム")
 
+            # ★ PixelFormat を取得して渡す
+            pf = self.ui.comboBoxPixelFormatCam1.currentText()
+
+            self.hist_dialog_cam1 = HistogramDialog(
+                title="Cam1 ライブヒストグラム",
+                pixel_format=pf
+            )
+
+        # 表示
         self.hist_dialog_cam1.show()
 
+        # ライブ接続
         if self.live_worker_cam1:
             try:
-                self.live_worker_cam1.new_frame.connect(self.hist_dialog_cam1.update_image)
+                self.live_worker_cam1.new_frame.connect(
+                    self.hist_dialog_cam1.update_image
+                )
                 print("✅ Cam1 histogram connected to live feed")
             except TypeError:
                 pass
@@ -774,13 +787,24 @@ class MainWindow(QMainWindow):
     def on_histogram_button_cam2(self):
         if not hasattr(self, "hist_dialog_cam2") or self.hist_dialog_cam2 is None:
             from ui.histogram_dialog import HistogramDialog
-            self.hist_dialog_cam2 = HistogramDialog(title="Cam2 ライブヒストグラム")
 
+            # ★ PixelFormat を取得して渡す
+            pf = self.ui.comboBoxPixelFormatCam2.currentText()
+
+            self.hist_dialog_cam2 = HistogramDialog(
+                title="Cam2 ライブヒストグラム",
+                pixel_format=pf
+            )
+
+        # 表示
         self.hist_dialog_cam2.show()
 
+        # ライブ接続
         if self.live_worker_cam2:
             try:
-                self.live_worker_cam2.new_frame.connect(self.hist_dialog_cam2.update_image)
+                self.live_worker_cam2.new_frame.connect(
+                    self.hist_dialog_cam2.update_image
+                )
                 print("✅ Cam2 histogram connected to live feed")
             except TypeError:
                 pass

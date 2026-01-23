@@ -718,7 +718,17 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG8</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR8</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG16</string>
      </property>
     </item>
     <item>
@@ -733,12 +743,22 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG10Packed</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR10Packed</string>
      </property>
     </item>
     <item>
      <property name="text">
       <string>Mono12Packed</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG12Packed</string>
      </property>
     </item>
     <item>
@@ -768,12 +788,22 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG10p</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR10p</string>
      </property>
     </item>
     <item>
      <property name="text">
       <string>Mono12p</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG12p</string>
      </property>
     </item>
     <item>
@@ -1608,7 +1638,17 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG8</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR8</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG16</string>
      </property>
     </item>
     <item>
@@ -1623,12 +1663,22 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG10Packed</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR10Packed</string>
      </property>
     </item>
     <item>
      <property name="text">
       <string>Mono12Packed</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG12Packed</string>
      </property>
     </item>
     <item>
@@ -1658,12 +1708,22 @@
     </item>
     <item>
      <property name="text">
+      <string>BayerRG10p</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
       <string>BayerGR10p</string>
      </property>
     </item>
     <item>
      <property name="text">
       <string>Mono12p</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>BayerRG12p</string>
      </property>
     </item>
     <item>

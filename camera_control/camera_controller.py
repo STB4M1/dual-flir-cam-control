@@ -27,6 +27,7 @@ class CameraController:
                        fps: float,
                        exposure_time: float,
                        gain_auto_mode: str,
+                       gain_value: float, 
                        exposure_auto_mode: str,
                        width: int,
                        height: int,
@@ -49,6 +50,7 @@ class CameraController:
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_auto_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_auto_mode,
             width=width,
             height=height,
@@ -73,6 +75,7 @@ class CameraController:
                        fps: float,
                        exposure_time: float,
                        gain_auto_mode: str,
+                       gain_value: float, 
                        exposure_auto_mode: str,
                        width: int,
                        height: int,
@@ -96,6 +99,7 @@ class CameraController:
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_auto_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_auto_mode,
             width=width,
             height=height,
@@ -115,17 +119,49 @@ class CameraController:
     # ---------------------------------------------------------
     # シングルキャプチャ (ハード同期撮影用)
     # ---------------------------------------------------------
-    def capture_single_frame(self, custom_filename1=None, custom_filename2=None):
+    def capture_single_frame(self, custom_filename1=None, custom_filename2=None, warmup_frames=0):
         if self.cam1 is None or self.cam2 is None:
             raise RuntimeError("カメラが初期化されていません")
 
-        self.cam1.trigger()
-        self.cam2.trigger()
+        # 録画と同じ開始
+        if not self.cam2.camera.IsStreaming():
+            self.cam2.camera.BeginAcquisition()
 
-        frame1 = self.cam1.capture_frame(custom_filename=custom_filename1)
-        frame2 = self.cam2.capture_frame(custom_filename=custom_filename2)
+        if not self.cam1.camera.IsStreaming():
+            self.cam1.camera.BeginAcquisition()
 
-        return frame1, frame2
+        # record() と同じ状態
+        self.cam1.trigger_event = True
+
+        saved1 = None
+        saved2 = None
+
+        try:
+            total = 1 + max(0, int(warmup_frames))  # warmup_frames=0なら1回だけ
+            for i in range(total):
+                tmp2 = self.cam2.capture_frame(custom_filename=custom_filename2 if i == total - 1 else None)
+                tmp1 = self.cam1.capture_frame(custom_filename=custom_filename1 if i == total - 1 else None)
+
+                if i == total - 1:
+                    saved1, saved2 = tmp1, tmp2
+
+            return saved1, saved2
+
+        finally:
+            # 状態を綺麗に戻す（次回のため）
+            try:
+                self.cam1.trigger_event = False
+            except:
+                pass
+
+            try:
+                self.cam1.stop()
+            except:
+                pass
+            try:
+                self.cam2.stop()
+            except:
+                pass
 
     # ---------------------------------------------------------
     # 録画

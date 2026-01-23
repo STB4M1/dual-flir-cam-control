@@ -31,6 +31,7 @@ class SecondaryCamera:
         exposure_time: float = None,
         image_format: str = 'jpg',
         gain_auto_mode: str = 'Off',
+        gain_value: float = None, 
         exposure_auto_mode: str = 'Off',
         width: int = None,
         height: int = None,
@@ -67,10 +68,18 @@ class SecondaryCamera:
 
         nodemap = self.camera.GetNodeMap()
 
-        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("GainAuto"))
+        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode('Gain'))
+
         if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
-            gain_auto_entry = gain_auto_node.GetEntryByName(gain_auto_mode)
-            gain_auto_node.SetIntValue(gain_auto_entry.GetValue())
+            entry = gain_auto_node.GetEntryByName(gain_auto_mode)
+            gain_auto_node.SetIntValue(entry.GetValue())
+
+            # Gain Value
+            if gain_value is not None and gain_auto_mode in ["Off", "Once"]:
+                if PySpin.IsAvailable(gain_node) and PySpin.IsWritable(gain_node):
+                    gain_node.SetValue(gain_value)
+                    print(f"[{self.name}] Gain set to {gain_value}")
 
         exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("ExposureAuto"))
         if PySpin.IsAvailable(exposure_auto_node) and PySpin.IsWritable(exposure_auto_node):
@@ -272,25 +281,76 @@ class SecondaryCamera:
         # self.trigger_event = False
         self._primed = False
 
-
     def capture_frame_for_live(self):
         """
-        LiveView専用：PixelFormat_Mono8 前提で直接NumPy取得（最も安定）
+        LiveView：カメラがサポートしている PixelFormat を自動判別し、
+        未対応フォーマットの場合はデバッグ情報を1回だけ表示する。
         """
+
+        # ------ 未対応フォーマットのログを一度だけ出すためのフラグ ------
+        if not hasattr(self, "_unsupported_logged"):
+            self._unsupported_logged = set()
+
         try:
             image_result = self.camera.GetNextImage(100)
-            # print(f"[LiveCapture] image_result type: {type(image_result)}")
 
             if image_result.IsIncomplete():
                 print("[LiveCapture] Incomplete image")
                 image_result.Release()
                 return None
 
+            pixel_format = image_result.GetPixelFormat()
+            h = image_result.GetHeight()
+            w = image_result.GetWidth()
+
+            # ---------- デバッグ用：PixelFormat 名を取得 ----------
+            try:
+                pf_name = self.camera.PixelFormat.GetCurrentEntry().GetSymbolic()
+            except:
+                pf_name = str(pixel_format)
+
+            # ======================================================
+            # ① RGB8 へ変換してみる（Bayer・YUV・YCbCr 対応）
+            # ======================================================
+            try:
+                converted = image_result.Convert(PySpin.PixelFormat_RGB8, PySpin.HQ_LINEAR)
+                data = converted.GetData()
+                arr = np.frombuffer(data, dtype=np.uint8).reshape(h, w, 3)
+                image_result.Release()
+                return np.ascontiguousarray(arr)
+            except Exception:
+                pass
+
+            # ======================================================
+            # ② BGR8 変換できるか試す（YCbCr系）
+            # ======================================================
+            try:
+                converted = image_result.Convert(PySpin.PixelFormat_BGR8, PySpin.HQ_LINEAR)
+                data = converted.GetData()
+                arr = np.frombuffer(data, dtype=np.uint8).reshape(h, w, 3)
+                image_result.Release()
+                return np.ascontiguousarray(arr)
+            except Exception:
+                pass
+
+            # ======================================================
+            # ③ 変換できない → NDArray （Mono8 や RAW）
+            # ======================================================
             arr = image_result.GetNDArray()
             image_result.Release()
-            arr = np.ascontiguousarray(arr)
 
-            return arr
+            # ★ 未対応フォーマットのときだけデバッグを出す
+            if pf_name not in self._unsupported_logged:
+                print("\n==============================")
+                print("🚨 未対応 PixelFormat を検出！")
+                print(f"PixelFormat = {pf_name}")
+                print(f"Value = {pixel_format}")
+                print("このまま NDArray（生データ）で表示します。")
+                print("==============================\n")
+
+                self._unsupported_logged.add(pf_name)
+
+            return np.ascontiguousarray(arr)
 
         except Exception as e:
             print(f"[LiveCapture] Error: {e}")
@@ -307,6 +367,7 @@ class SecondaryCamera:
         reverse_x: bool = False,
         reverse_y: bool = False,
         gain_auto_mode: str = 'Off',
+        gain_value: float = None, 
         exposure_auto_mode: str = 'Off',
         exposure_time: float = None,
         fps: float = None,
@@ -324,11 +385,18 @@ class SecondaryCamera:
         self.reverse_y = reverse_y
         nodemap = self.camera.GetNodeMap()
 
-        # GainAuto
+        # --- GainAuto / Gain ---
         gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode('Gain'))
+
         if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
             entry = gain_auto_node.GetEntryByName(gain_auto_mode)
             gain_auto_node.SetIntValue(entry.GetValue())
+
+            # Off / Once のときだけ Gain を反映
+            if gain_value is not None and gain_auto_mode in ["Off", "Once"]:
+                if PySpin.IsAvailable(gain_node) and PySpin.IsWritable(gain_node):
+                    gain_node.SetValue(gain_value)
 
         # ExposureAuto
         exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('ExposureAuto'))
@@ -424,17 +492,21 @@ class SecondaryCamera:
                 selector_node.SetIntValue(blue_entry.GetValue())
                 ratio_node.SetValue(wb_blue)
 
-        # Stream mode for LiveView
-        self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_NewestOnly)
-
-        self._primed = True
-
         self.roi_info = {
             'x_min': offset_x,
             'y_min': offset_y,
             'x_max': offset_x + roi_w,
             'y_max': offset_y + roi_h
         }
+
+        # --- Stream mode for LiveView ---
+        self.camera.TLStream.StreamBufferHandlingMode.SetValue(PySpin.StreamBufferHandlingMode_NewestOnly)
+
+        # --- BeginAcquisition（絶対必要）---
+        self.camera.BeginAcquisition()
+
+        # --- 状態更新 ---
+        self._primed = True
 
     def release(self):
         try:
