@@ -85,6 +85,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                 width=self.ui.spinBoxWidthCam1.value(),
                 height=self.ui.spinBoxHeightCam1.value(),
@@ -127,6 +128,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                 width=self.ui.spinBoxWidthCam2.value(),
                 height=self.ui.spinBoxHeightCam2.value(),
@@ -172,6 +174,7 @@ class MainWindow(QMainWindow):
         fps = self.ui.doubleSpinBoxFpsCam1.value()
         exposure_time = self.ui.doubleSpinBoxExposureCam1.value()
         gain_mode = self.ui.comboBoxGainCam1.currentText()
+        gain_value = self.ui.doubleSpinBoxGainCam1.value()
         exposure_mode = self.ui.comboBoxExposureCam1.currentText()
         width = self.ui.spinBoxWidthCam1.value()
         height = self.ui.spinBoxHeightCam1.value()
@@ -192,6 +195,7 @@ class MainWindow(QMainWindow):
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_mode,
             width=width,
             height=height,
@@ -236,6 +240,7 @@ class MainWindow(QMainWindow):
         fps = self.ui.doubleSpinBoxFpsCam2.value()
         exposure_time = self.ui.doubleSpinBoxExposureCam2.value()
         gain_mode = self.ui.comboBoxGainCam2.currentText()
+        gain_value = self.ui.doubleSpinBoxGainCam2.value()
         exposure_mode = self.ui.comboBoxExposureCam2.currentText()
         width = self.ui.spinBoxWidthCam2.value()
         height = self.ui.spinBoxHeightCam2.value()
@@ -256,6 +261,7 @@ class MainWindow(QMainWindow):
             fps=fps,
             exposure_time=exposure_time,
             gain_auto_mode=gain_mode,
+            gain_value=gain_value,
             exposure_auto_mode=exposure_mode,
             width=width,
             height=height,
@@ -312,6 +318,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam1.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                 width=self.ui.spinBoxWidthCam1.value(),
                 height=self.ui.spinBoxHeightCam1.value(),
@@ -334,6 +341,7 @@ class MainWindow(QMainWindow):
                 fps=self.ui.doubleSpinBoxFpsCam2.value(),
                 exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                 gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                 exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                 width=self.ui.spinBoxWidthCam2.value(),
                 height=self.ui.spinBoxHeightCam2.value(),
@@ -383,6 +391,7 @@ class MainWindow(QMainWindow):
         fps1 = self.ui.doubleSpinBoxFpsCam1.value()
         exposure1 = self.ui.doubleSpinBoxExposureCam1.value()
         gain_mode1 = self.ui.comboBoxGainCam1.currentText()
+        gain_value1 = self.ui.doubleSpinBoxGainCam1.value()
         exposure_mode1 = self.ui.comboBoxExposureCam1.currentText()
         width1 = self.ui.spinBoxWidthCam1.value()
         height1 = self.ui.spinBoxHeightCam1.value()
@@ -403,6 +412,7 @@ class MainWindow(QMainWindow):
         fps2 = self.ui.doubleSpinBoxFpsCam2.value()
         exposure2 = self.ui.doubleSpinBoxExposureCam2.value()
         gain_mode2 = self.ui.comboBoxGainCam2.currentText()
+        gain_value2 = self.ui.doubleSpinBoxGainCam2.value()
         exposure_mode2 = self.ui.comboBoxExposureCam2.currentText()
         width2 = self.ui.spinBoxWidthCam2.value()
         height2 = self.ui.spinBoxHeightCam2.value()
@@ -423,6 +433,7 @@ class MainWindow(QMainWindow):
             fps=fps1,
             exposure_time=exposure1,
             gain_auto_mode=gain_mode1,
+            gain_value=gain_value1,
             exposure_auto_mode=exposure_mode1,
             width=width1,
             height=height1,
@@ -444,6 +455,7 @@ class MainWindow(QMainWindow):
             fps=fps2,
             exposure_time=exposure2,
             gain_auto_mode=gain_mode2,
+            gain_value=gain_value2,
             exposure_auto_mode=exposure_mode2,
             width=width2,
             height=height2,
@@ -519,6 +531,7 @@ class MainWindow(QMainWindow):
                     fps=self.ui.doubleSpinBoxFpsCam1.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam1.value(),
                     gain_auto_mode=self.ui.comboBoxGainCam1.currentText(),
+                    gain_value=self.ui.doubleSpinBoxGainCam1.value(),
                     exposure_auto_mode=self.ui.comboBoxExposureCam1.currentText(),
                     width=self.ui.spinBoxWidthCam1.value(),
                     height=self.ui.spinBoxHeightCam1.value(),
@@ -574,6 +587,7 @@ class MainWindow(QMainWindow):
                     fps=self.ui.doubleSpinBoxFpsCam2.value(),
                     exposure_time=self.ui.doubleSpinBoxExposureCam2.value(),
                     gain_auto_mode=self.ui.comboBoxGainCam2.currentText(),
+                    gain_value=self.ui.doubleSpinBoxGainCam2.value(),
                     exposure_auto_mode=self.ui.comboBoxExposureCam2.currentText(),
                     width=self.ui.spinBoxWidthCam2.value(),
                     height=self.ui.spinBoxHeightCam2.value(),

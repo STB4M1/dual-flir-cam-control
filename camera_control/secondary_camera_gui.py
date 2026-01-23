@@ -31,6 +31,7 @@ class SecondaryCamera:
         exposure_time: float = None,
         image_format: str = 'jpg',
         gain_auto_mode: str = 'Off',
+        gain_value: float = None, 
         exposure_auto_mode: str = 'Off',
         width: int = None,
         height: int = None,
@@ -67,10 +68,18 @@ class SecondaryCamera:
 
         nodemap = self.camera.GetNodeMap()
 
-        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("GainAuto"))
+        gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode('Gain'))
+
         if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
-            gain_auto_entry = gain_auto_node.GetEntryByName(gain_auto_mode)
-            gain_auto_node.SetIntValue(gain_auto_entry.GetValue())
+            entry = gain_auto_node.GetEntryByName(gain_auto_mode)
+            gain_auto_node.SetIntValue(entry.GetValue())
+
+            # Gain Value
+            if gain_value is not None and gain_auto_mode in ["Off", "Once"]:
+                if PySpin.IsAvailable(gain_node) and PySpin.IsWritable(gain_node):
+                    gain_node.SetValue(gain_value)
+                    print(f"[{self.name}] Gain set to {gain_value}")
 
         exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode("ExposureAuto"))
         if PySpin.IsAvailable(exposure_auto_node) and PySpin.IsWritable(exposure_auto_node):
@@ -358,6 +367,7 @@ class SecondaryCamera:
         reverse_x: bool = False,
         reverse_y: bool = False,
         gain_auto_mode: str = 'Off',
+        gain_value: float = None, 
         exposure_auto_mode: str = 'Off',
         exposure_time: float = None,
         fps: float = None,
@@ -375,11 +385,18 @@ class SecondaryCamera:
         self.reverse_y = reverse_y
         nodemap = self.camera.GetNodeMap()
 
-        # GainAuto
+        # --- GainAuto / Gain ---
         gain_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('GainAuto'))
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode('Gain'))
+
         if PySpin.IsAvailable(gain_auto_node) and PySpin.IsWritable(gain_auto_node):
             entry = gain_auto_node.GetEntryByName(gain_auto_mode)
             gain_auto_node.SetIntValue(entry.GetValue())
+
+            # Off / Once のときだけ Gain を反映
+            if gain_value is not None and gain_auto_mode in ["Off", "Once"]:
+                if PySpin.IsAvailable(gain_node) and PySpin.IsWritable(gain_node):
+                    gain_node.SetValue(gain_value)
 
         # ExposureAuto
         exposure_auto_node = PySpin.CEnumerationPtr(nodemap.GetNode('ExposureAuto'))
