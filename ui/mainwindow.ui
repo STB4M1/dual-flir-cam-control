@@ -147,7 +147,7 @@
      <double>100000.000000000000000</double>
     </property>
     <property name="value">
-     <double>50.000000000000000</double>
+     <double>30.000000000000000</double>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="doubleSpinBoxExposureCam2">
@@ -163,7 +163,7 @@
      <double>100000.000000000000000</double>
     </property>
     <property name="value">
-     <double>50.000000000000000</double>
+     <double>30.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="labelExposureTimeCam1">
@@ -321,7 +321,7 @@
      <double>100000.000000000000000</double>
     </property>
     <property name="value">
-     <double>100.000000000000000</double>
+     <double>200.000000000000000</double>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="doubleSpinBoxFpsCam2">
@@ -337,7 +337,7 @@
      <double>100000.000000000000000</double>
     </property>
     <property name="value">
-     <double>100.000000000000000</double>
+     <double>200.000000000000000</double>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBoxWidthCam1">
@@ -1453,7 +1453,7 @@
      </rect>
     </property>
     <property name="value">
-     <double>0.100000000000000</double>
+     <double>0.500000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="labelRecordingTimeCam2">
@@ -1487,7 +1487,7 @@
      </rect>
     </property>
     <property name="value">
-     <double>0.100000000000000</double>
+     <double>0.500000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="labelRecordingTimeUnitCam1">
